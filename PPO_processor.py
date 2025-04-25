@@ -55,7 +55,7 @@ class ImagePreprocessingEnv(gym.Env):
 
                 # add penalty for extra detections
                 if len(detections) > 3:
-                    reward -= (3 - len(detections))
+                    reward += (3 - len(detections))
         else:
             reward = -1.0
 
@@ -97,11 +97,11 @@ class ImagePreprocessingEnv(gym.Env):
         plt.xlabel("Episode")
         plt.ylabel("Reward")
         # Save the plot
-        plt.savefig("rewards_plot.png")
+        plt.savefig("output/PPO/rewards_plot.png")
         plt.show()
 
         # save rewards to a text file
-        with open("rewards.txt", "w") as f:
+        with open("output/PPO/rewards.txt", "w") as f:
             for reward in self.all_rewards:
                 f.write(f"{reward}\n")
         print("Rewards saved to 'rewards.txt' and plot saved as 'rewards_plot.png'.")
