@@ -122,7 +122,7 @@ if __name__ == "__main__":
     alpha = 0.1
     gamma = 1.0
     epsilon = 0.2
-    epsilon_decay = 0.999
+    epsilon_decay = 0.9999
     epsilon_min = 0.01
     num_episodes = 10000
 
@@ -145,7 +145,7 @@ if __name__ == "__main__":
         if epsilon > epsilon_min:
             epsilon *= epsilon_decay
         if episode % 100 == 0:
-            print(f"Episode {episode+1}/{num_episodes}, Reward: {reward:.2f}, Epsilon: {epsilon:.3f}")
+            print(f"Episode {episode+1}/{num_episodes}, Avg. Reward: {np.mean(env.all_rewards):.2f}, Epsilon: {epsilon:.3f}")
             env.plot_rewards(save=True)
         
     env.plot_rewards()
