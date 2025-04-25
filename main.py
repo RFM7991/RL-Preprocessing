@@ -96,7 +96,15 @@ class ImagePreprocessingEnv(gym.Env):
         plt.title("Rewards Over Time")
         plt.xlabel("Episode")
         plt.ylabel("Reward")
+        # Save the plot
+        plt.savefig("rewards_plot.png")
         plt.show()
+
+        # save rewards to a text file
+        with open("rewards.txt", "w") as f:
+            for reward in self.all_rewards:
+                f.write(f"{reward}\n")
+        print("Rewards saved to 'rewards.txt' and plot saved as 'rewards_plot.png'.")
 
 if __name__ == "__main__":
 
