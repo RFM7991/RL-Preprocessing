@@ -112,7 +112,7 @@ class ImagePreprocessingQEnv:
             with open("output/Q/rewards.txt", "w") as f:
                 for reward in self.all_rewards:
                     f.write(f"{reward}\n")
-        print("Rewards saved to 'rewards.txt' and plot saved as 'rewards_plot.png'.")
+        # print("Rewards saved to 'rewards.txt' and plot saved as 'rewards_plot.png'.")
 
 if __name__ == "__main__":
     num_bins = 20
