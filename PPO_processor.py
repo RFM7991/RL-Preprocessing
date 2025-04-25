@@ -118,9 +118,9 @@ if __name__ == "__main__":
     device = detector.device
     print(f"Using device: {device}")
 
-    n_steps = 64  # Number of steps per rollout
-    batch_size = 16  # Size of mini-batches
-    total_timesteps = 10000  # Total timesteps for training
+    n_steps = 128  # Number of steps per rollout
+    batch_size = 32  # Size of mini-batches
+    total_timesteps = 50000  # Total timesteps for training
     n_epochs = 10  # Number of epochs per update
     learning_rate = 3e-4  # Learning rate
 
