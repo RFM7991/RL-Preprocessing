@@ -121,8 +121,8 @@ if __name__ == "__main__":
 
     alpha = 0.1
     gamma = 1.0
-    epsilon = 0.1
-    epsilon_decay = 0.995
+    epsilon = 0.2
+    epsilon_decay = 0.999
     epsilon_min = 0.01
     num_episodes = 10000
 
