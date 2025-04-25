@@ -129,7 +129,7 @@ if __name__ == "__main__":
     model_path = "models/YOLO_eye_detector.pt"
     image_folder = "images/test"
     detector = ObjectDetectorCNN(model_path)
-    env = ImagePreprocessingQEnv(detector, image_folder, render=True, num_bins=num_bins)
+    env = ImagePreprocessingQEnv(detector, image_folder, render=False, num_bins=num_bins)
 
     for episode in range(num_episodes):
         state = env.reset()
