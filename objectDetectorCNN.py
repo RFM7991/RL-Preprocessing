@@ -49,11 +49,18 @@ class ObjectDetectorCNN:
         class_names = results[0].names
         detections = []
 
+        
+        classes_found = set()
         if obb_data is not None and isinstance(obb_data, torch.Tensor):
             for obb in obb_data.cpu().numpy():
                 x_center, y_center, width, height, angle, conf, cls = obb
                 cls_name = class_names[int(cls)]
                 angle_deg = np.degrees(angle)
+                
+                if cls_name not in classes_found:
+                    classes_found.add(cls_name)
+                else:
+                    continue                    
                 
                 detection = {
                     "x_center": x_center,
