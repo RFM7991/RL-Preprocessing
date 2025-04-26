@@ -115,7 +115,7 @@ class ImagePreprocessingQEnv:
         # print("Rewards saved to 'rewards.txt' and plot saved as 'rewards_plot.png'.")
 
 if __name__ == "__main__":
-    num_bins = 5
+    num_bins = 10
     num_actions = num_bins * num_bins
     q_table = np.zeros((num_bins, num_bins, num_actions))
 
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     num_episodes = 10000
 
     model_path = "models/YOLO_eye_detector.pt"
-    image_folder = "images/test"
+    image_folder = "images/no_pupil"
     detector = ObjectDetectorCNN(model_path)
     env = ImagePreprocessingQEnv(detector, image_folder, render=False, num_bins=num_bins)
 
