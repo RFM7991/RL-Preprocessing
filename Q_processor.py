@@ -132,8 +132,6 @@ class ImagePreprocessingQEnv:
 if __name__ == "__main__":
     num_bins = 10
     num_actions = num_bins * num_bins
-    q_table = np.zeros((num_bins, num_bins, num_actions))
-
     alpha = 0.1
     gamma = 1.0
     epsilon = 0.2
@@ -146,9 +144,9 @@ if __name__ == "__main__":
     for i in range(num_experiments):
         model_path = "models/YOLO_eye_detector.pt"
         image_folder = "images/test"
+        q_table = np.zeros((num_bins, num_bins, num_actions))
         detector = ObjectDetectorCNN(model_path)
         env = ImagePreprocessingQEnv(detector, image_folder, render=False, num_bins=num_bins)
-
 
         for episode in range(num_episodes):
             state = env.reset()
