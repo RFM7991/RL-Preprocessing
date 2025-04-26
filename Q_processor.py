@@ -137,7 +137,7 @@ if __name__ == "__main__":
     epsilon = 0.2
     epsilon_decay = 0.9999
     epsilon_min = 0.01
-    num_episodes = 5000
+    num_episodes = 2500
     num_experiments = 10
     rewards = []
 
