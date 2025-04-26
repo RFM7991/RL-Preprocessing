@@ -113,9 +113,23 @@ class ImagePreprocessingQEnv:
                 for reward in self.all_rewards:
                     f.write(f"{reward}\n")
         # print("Rewards saved to 'rewards.txt' and plot saved as 'rewards_plot.png'.")
+    
+    def plot_avg_rewards(self, avg_rewards, save=True):
+        plt.plot(avg_rewards)
+        plt.title("Average Rewards Over Time")
+        plt.xlabel("Episode")
+        plt.ylabel("Reward")
+        if save:
+            plt.savefig("output/Q/avg_rewards_plot.png")
+        # plt.show()
+
+        if save: 
+            with open("output/Q/avg_rewards.txt", "w") as f:
+                for reward in avg_rewards:
+                    f.write(f"{reward}\n")
 
 if __name__ == "__main__":
-    num_bins = 10
+    num_bins = 40
     num_actions = num_bins * num_bins
     q_table = np.zeros((num_bins, num_bins, num_actions))
 
@@ -125,28 +139,37 @@ if __name__ == "__main__":
     epsilon_decay = 0.9999
     epsilon_min = 0.01
     num_episodes = 10000
+    num_experiments = 5
+    rewards = []
 
-    model_path = "models/YOLO_eye_detector.pt"
-    image_folder = "images/no_pupil"
-    detector = ObjectDetectorCNN(model_path)
-    env = ImagePreprocessingQEnv(detector, image_folder, render=False, num_bins=num_bins)
+    for i in range(num_experiments):
+        model_path = "models/YOLO_eye_detector.pt"
+        image_folder = "images/test"
+        detector = ObjectDetectorCNN(model_path)
+        env = ImagePreprocessingQEnv(detector, image_folder, render=False, num_bins=num_bins)
 
-    for episode in range(num_episodes):
-        state = env.reset()
-        action_index = np.random.choice(num_actions) if np.random.rand() < epsilon else np.argmax(q_table[state[0], state[1]])
 
-        next_state, reward, done = env.step(action_index)
+        for episode in range(num_episodes):
+            state = env.reset()
+            action_index = np.random.choice(num_actions) if np.random.rand() < epsilon else np.argmax(q_table[state[0], state[1]])
 
-        best_next_action = np.argmax(q_table[next_state[0], next_state[1]])
-        td_target = reward + gamma * q_table[next_state[0], next_state[1], best_next_action]
-        td_error = td_target - q_table[state[0], state[1], action_index]
-        q_table[state[0], state[1], action_index] += alpha * td_error
+            next_state, reward, done = env.step(action_index)
 
-        if epsilon > epsilon_min:
-            epsilon *= epsilon_decay
-        if episode % 100 == 0:
-            print(f"Episode {episode+1}/{num_episodes}, Avg. Reward: {np.mean(env.all_rewards):.2f}, Epsilon: {epsilon:.3f}")
-            env.plot_rewards(save=True)
-        
-    env.plot_rewards()
+            best_next_action = np.argmax(q_table[next_state[0], next_state[1]])
+            td_target = reward + gamma * q_table[next_state[0], next_state[1], best_next_action]
+            td_error = td_target - q_table[state[0], state[1], action_index]
+            q_table[state[0], state[1], action_index] += alpha * td_error
+
+            if epsilon > epsilon_min:
+                epsilon *= epsilon_decay
+            if episode % 100 == 0:
+                print(f"Episode {episode+1}/{num_episodes}, Avg. Reward: {np.mean(env.all_rewards):.2f}, Epsilon: {epsilon:.3f}")
+                env.plot_rewards(save=True)
+            
+        rewards.append(env.all_rewards)
+        print(f"Experiment {i+1}/{num_experiments}, Avg. Reward: {np.mean(env.all_rewards):.2f}")
+
+    avg_rewards = np.mean(rewards, axis=0)
+    print(f"Average Reward over {num_experiments} experiments: {np.mean(avg_rewards):.2f}")
+    env.plot_avg_rewards(avg_rewards, save=True)
     print("Q-learning training complete.")
