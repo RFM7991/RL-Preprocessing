@@ -115,6 +115,7 @@ class ImagePreprocessingQEnv:
         # print("Rewards saved to 'rewards.txt' and plot saved as 'rewards_plot.png'.")
     
     def plot_avg_rewards(self, avg_rewards, save=True):
+        plt.figure(figsize=(10, 5))
         plt.plot(avg_rewards)
         plt.title("Average Rewards Over Time")
         plt.xlabel("Episode")
@@ -129,7 +130,7 @@ class ImagePreprocessingQEnv:
                     f.write(f"{reward}\n")
 
 if __name__ == "__main__":
-    num_bins = 40
+    num_bins = 10
     num_actions = num_bins * num_bins
     q_table = np.zeros((num_bins, num_bins, num_actions))
 
@@ -138,8 +139,8 @@ if __name__ == "__main__":
     epsilon = 0.2
     epsilon_decay = 0.9999
     epsilon_min = 0.01
-    num_episodes = 1000
-    num_experiments = 5
+    num_episodes = 5000
+    num_experiments = 10
     rewards = []
 
     for i in range(num_experiments):
