@@ -137,13 +137,13 @@ if __name__ == "__main__":
     epsilon = 0.2
     epsilon_decay = 0.9999
     epsilon_min = 0.01
-    num_episodes = 2500
+    num_episodes = 1000
     num_experiments = 10
     rewards = []
 
     for i in range(num_experiments):
         model_path = "models/YOLO_eye_detector.pt"
-        image_folder = "images/test"
+        image_folder = "images/no_pupil"
         q_table = np.zeros((num_bins, num_bins, num_actions))
         detector = ObjectDetectorCNN(model_path)
         env = ImagePreprocessingQEnv(detector, image_folder, render=False, num_bins=num_bins)
