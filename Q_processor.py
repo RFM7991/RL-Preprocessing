@@ -99,13 +99,13 @@ class ImagePreprocessingQEnv:
         adjusted = cv2.convertScaleAbs(img, alpha=alpha, beta=beta)
         return adjusted
 
-    def plot_rewards(self, save=True):
+    def plot_rewards(self, save=True, model_type="Q"):
         plt.plot(self.all_rewards)
         plt.title("Rewards Over Time")
         plt.xlabel("Episode")
         plt.ylabel("Reward")
         if save:
-            plt.savefig("output/Q/rewards_plot.png")
+            plt.savefig(f"output/{model_type}/rewards_plot.png")
         # plt.show()
 
         if save: 
