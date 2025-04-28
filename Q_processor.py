@@ -114,14 +114,14 @@ class ImagePreprocessingQEnv:
                     f.write(f"{reward}\n")
         # print("Rewards saved to 'rewards.txt' and plot saved as 'rewards_plot.png'.")
     
-    def plot_avg_rewards(self, avg_rewards, save=True):
+    def plot_avg_rewards(self, avg_rewards, save=True, model_type="Q"):
         plt.figure(figsize=(10, 5))
         plt.plot(avg_rewards)
         plt.title("Average Rewards Over Time")
         plt.xlabel("Episode")
         plt.ylabel("Reward")
         if save:
-            plt.savefig("output/Q/avg_rewards_plot.png")
+            plt.savefig(f"output/{model_type}/avg_rewards_plot.png")
         # plt.show()
 
         if save: 
@@ -164,12 +164,12 @@ if __name__ == "__main__":
             if episode % 100 == 0:
                 past_100_avg_rewards = np.mean(env.all_rewards[-100]) if len(env.all_rewards) >= 100 else np.mean(env.all_rewards)
                 print(f"Episode {episode+1}/{num_episodes}, Total Avg.Reward: {np.mean(env.all_rewards):.2f}, 100 eps Avg. Reward: {past_100_avg_rewards:.2}, Epsilon: {epsilon:.3f}")
-                env.plot_rewards(save=True)
+                env.plot_rewards(save=True, model_type="Q")
             
         rewards.append(env.all_rewards)
         print(f"Experiment {i+1}/{num_experiments}, Avg. Reward: {np.mean(env.all_rewards):.2f}")
 
     avg_rewards = np.mean(rewards, axis=0)
     print(f"Average Reward over {num_experiments} experiments: {np.mean(avg_rewards):.2f}")
-    env.plot_avg_rewards(avg_rewards, save=True)
+    env.plot_avg_rewards(avg_rewards, save=True, model_type="Q")
     print("Q-learning training complete.")
