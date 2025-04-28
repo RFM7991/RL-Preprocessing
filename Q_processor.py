@@ -119,6 +119,7 @@ class ImagePreprocessingQEnv:
                 for reward in self.all_rewards:
                     f.write(f"{reward}\n")
         # print("Rewards saved to 'rewards.txt' and plot saved as 'rewards_plot.png'.")
+        plt.close()
     
     def plot_avg_rewards(self, avg_rewards, save=True, model_type="Q"):
         plt.figure(figsize=(10, 5))
@@ -134,6 +135,7 @@ class ImagePreprocessingQEnv:
             with open("output/Q/avg_rewards.txt", "w") as f:
                 for reward in avg_rewards:
                     f.write(f"{reward}\n")
+        plt.close()
 
     def plot_differences(self, save=True, model_type="Q"):
         plt.figure(figsize=(10, 5))
@@ -143,6 +145,7 @@ class ImagePreprocessingQEnv:
         plt.ylabel("Difference in Confidence")
         if save:
             plt.savefig(f"output/{model_type}/differences_plot.png")
+        plt.close()
         # plt.show()
 
 
@@ -156,6 +159,7 @@ class ImagePreprocessingQEnv:
             plt.savefig(f"output/{model_type}/avg_differences_plot.png")
         # plt.show()
 
+        plt.close()
 
 if __name__ == "__main__":
     num_bins = 10
