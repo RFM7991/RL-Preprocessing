@@ -55,8 +55,8 @@ if __name__ == "__main__":
     batch_size = 32
     target_update_freq = 10
     memory_capacity = 10000
-    num_episodes = 100
-    num_experiments = 2
+    num_episodes = 1000
+    num_experiments = 10
     rewards = []
     differences = []
 
