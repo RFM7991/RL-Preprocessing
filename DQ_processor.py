@@ -48,14 +48,14 @@ class ImagePreprocessingDQNEnv(ImagePreprocessingQEnv):
 if __name__ == "__main__":
     num_bins = 10
     num_actions = num_bins * num_bins
-    gamma = 0.99
+    gamma = 1.0
     epsilon_start = 0.2
     epsilon_decay = 0.999
     epsilon_min = 0.01
     batch_size = 32
     target_update_freq = 10
     memory_capacity = 10000
-    num_episodes = 1000
+    num_episodes = 10000
     num_experiments = 10
     rewards = []
 
@@ -123,12 +123,12 @@ if __name__ == "__main__":
             if episode % 100 == 0:
                 past_100_avg_rewards = np.mean(env.all_rewards[-100]) if len(env.all_rewards) >= 100 else np.mean(env.all_rewards)
                 print(f"Experiment {i+1}/{num_experiments}, Episode {episode+1}/{num_episodes}, Total Avg. Reward: {np.mean(env.all_rewards):.2f}, 100 eps Avg. Reward: {past_100_avg_rewards:.2f}, Epsilon: {epsilon:.3f}")
-                env.plot_rewards(save=True)
+                env.plot_rewards(save=True, model_type="DQN")
 
         rewards.append(env.all_rewards)
         print(f"Experiment {i+1}/{num_experiments}, Avg. Reward: {np.mean(env.all_rewards):.2f}")
 
     avg_rewards = np.mean(rewards, axis=0)
     print(f"Average Reward over {num_experiments} experiments: {np.mean(avg_rewards):.2f}")
-    env.plot_avg_rewards(avg_rewards, save=True)
+    env.plot_avg_rewards(avg_rewards, save=True, model_type="DQN")
     print("DQN training complete.")
