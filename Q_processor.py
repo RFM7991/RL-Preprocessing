@@ -162,7 +162,8 @@ if __name__ == "__main__":
             if epsilon > epsilon_min:
                 epsilon *= epsilon_decay
             if episode % 100 == 0:
-                print(f"Episode {episode+1}/{num_episodes}, Avg. Reward: {np.mean(env.all_rewards):.2f}, Epsilon: {epsilon:.3f}")
+                past_100_avg_rewards = np.mean(env.all_rewards[-100]) if len(env.all_rewards) >= 100 else np.mean(env.all_rewards)
+                print(f"Episode {episode+1}/{num_episodes}, Total Avg.Reward: {np.mean(env.all_rewards):.2f}, 100 eps Avg. Reward: {past_100_avg_rewards:.2}, Epsilon: {epsilon:.3f}")
                 env.plot_rewards(save=True)
             
         rewards.append(env.all_rewards)
