@@ -60,7 +60,13 @@ class ObjectDetectorCNN:
                 if cls_name not in classes_found:
                     classes_found.add(cls_name)
                 else:
-                    continue                    
+                    # keep highest confidence 
+                    if cls_name in [det["class_name"] for det in detections]:
+                        existing_det = next(det for det in detections if det["class_name"] == cls_name)
+                        if existing_det["confidence"] < conf:
+                            detections.remove(existing_det)
+                        else:
+                            continue                   
                 
                 detection = {
                     "x_center": x_center,

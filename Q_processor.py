@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
     for i in range(num_experiments):
         model_path = "models/YOLO_eye_detector.pt"
-        image_folder = "images/no_pupil"
+        image_folder = "images/test"
         q_table = np.zeros((num_bins, num_bins, num_actions))
         detector = ObjectDetectorCNN(model_path)
         env = ImagePreprocessingQEnv(detector, image_folder, render=False, num_bins=num_bins)
