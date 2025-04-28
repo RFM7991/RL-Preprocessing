@@ -46,7 +46,7 @@ class ImagePreprocessingDQNEnv(ImagePreprocessingQEnv):
 
 
 if __name__ == "__main__":
-    num_bins = 10
+    num_bins = 40
     num_actions = num_bins * num_bins
     gamma = 1.0
     epsilon_start = 0.2
@@ -64,9 +64,9 @@ if __name__ == "__main__":
     for i in range(num_experiments):
         epsilon = epsilon_start
         model_path = "models/YOLO_eye_detector.pt"
-        image_folder = "images/no_pupil"
+        image_folder = "images/splits"
         detector = ObjectDetectorCNN(model_path)
-        env = ImagePreprocessingDQNEnv(detector, image_folder, render=False, num_bins=num_bins)
+        env = ImagePreprocessingDQNEnv(detector, image_folder, render=True, num_bins=num_bins)
 
         policy_net = DQN(input_dim=2, output_dim=num_actions).to(device)
         target_net = DQN(input_dim=2, output_dim=num_actions).to(device)
