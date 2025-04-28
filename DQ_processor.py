@@ -46,7 +46,7 @@ class ImagePreprocessingDQNEnv(ImagePreprocessingQEnv):
 
 
 if __name__ == "__main__":
-    num_bins = 40
+    num_bins = 20
     num_actions = num_bins * num_bins
     gamma = 1.0
     epsilon_start = 0.2
@@ -55,9 +55,10 @@ if __name__ == "__main__":
     batch_size = 32
     target_update_freq = 10
     memory_capacity = 10000
-    num_episodes = 10000
-    num_experiments = 10
+    num_episodes = 100
+    num_experiments = 2
     rewards = []
+    differences = []
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -66,7 +67,7 @@ if __name__ == "__main__":
         model_path = "models/YOLO_eye_detector.pt"
         image_folder = "images/splits"
         detector = ObjectDetectorCNN(model_path)
-        env = ImagePreprocessingDQNEnv(detector, image_folder, render=True, num_bins=num_bins)
+        env = ImagePreprocessingDQNEnv(detector, image_folder, render=False, num_bins=num_bins)
 
         policy_net = DQN(input_dim=2, output_dim=num_actions).to(device)
         target_net = DQN(input_dim=2, output_dim=num_actions).to(device)
@@ -122,13 +123,19 @@ if __name__ == "__main__":
             env.all_rewards.append(total_reward)
             if episode % 100 == 0:
                 past_100_avg_rewards = np.mean(env.all_rewards[-100]) if len(env.all_rewards) >= 100 else np.mean(env.all_rewards)
-                print(f"Experiment {i+1}/{num_experiments}, Episode {episode+1}/{num_episodes}, Total Avg. Reward: {np.mean(env.all_rewards):.2f}, 100 eps Avg. Reward: {past_100_avg_rewards:.2f}, Epsilon: {epsilon:.3f}")
+                past_100_avg_differences = np.mean(env.all_differences[-100]) if len(env.all_differences) >= 100 else np.mean(env.all_differences)
+                print(f"Experiment {i+1}/{num_experiments}, Episode {episode+1}/{num_episodes}, Total Avg. Reward: {np.mean(env.all_rewards):.2f}, 100 Eps Avg. Reward: {past_100_avg_rewards:.2f}, Total Avg. Diff: {np.mean(env.all_differences):.2f}, 100 Eps Diff: {past_100_avg_differences:.2f} Epsilon: {epsilon:.3f}")
                 env.plot_rewards(save=True, model_type="DQN")
+                env.plot_differences(save=True, model_type="DQN")
 
         rewards.append(env.all_rewards)
-        print(f"Experiment {i+1}/{num_experiments}, Avg. Reward: {np.mean(env.all_rewards):.2f}")
+        differences.append(env.all_differences)
+        print(f"Experiment {i+1}/{num_experiments}, Avg. Reward: {np.mean(env.all_rewards):.2f}, Avg. Difference: {np.mean(env.all_differences):.2f}")
 
     avg_rewards = np.mean(rewards, axis=0)
-    print(f"Average Reward over {num_experiments} experiments: {np.mean(avg_rewards):.2f}")
     env.plot_avg_rewards(avg_rewards, save=True, model_type="DQN")
+    avg_differences = np.mean(differences, axis=0)
+    env.plot_avg_differences(avg_differences, save=True, model_type="DQN")
+    print(f"Average Reward over {num_experiments} experiments: {np.mean(avg_rewards):.2f}, Average Difference: {np.mean(avg_differences):.2f}")
+
     print("DQN training complete.")

@@ -65,10 +65,11 @@ if __name__ == "__main__":
     critic_lr = 1e-3
     batch_size = 64
     memory_capacity = 100000
-    num_episodes = 10000
-    num_experiments = 10
+    num_episodes = 100
+    num_experiments = 2
     action_noise_std = 0.1
     rewards = []
+    differences = []
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -156,13 +157,18 @@ if __name__ == "__main__":
             env.all_rewards.append(total_reward)
             if episode % 100 == 0:
                 past_100_avg_rewards = np.mean(env.all_rewards[-100]) if len(env.all_rewards) >= 100 else np.mean(env.all_rewards)
-                print(f"Experiment {i+1}/{num_experiments}, Episode {episode+1}/{num_episodes}, Total Avg. Reward: {np.mean(env.all_rewards):.2f}, 100 eps Avg. Reward: {past_100_avg_rewards:.2f}")
+                past_100_avg_differences = np.mean(env.all_differences[-100]) if len(env.all_differences) >= 100 else np.mean(env.all_differences)
+                print(f"Experiment {i+1}/{num_experiments}, Episode {episode+1}/{num_episodes}, Total Avg. Reward: {np.mean(env.all_rewards):.2f}, 100 Eps Avg. Reward: {past_100_avg_rewards:.2f}, Total Avg. Diff: {np.mean(env.all_differences):.2f}, 100 Eps Diff: {past_100_avg_differences:.2f}")
                 env.plot_rewards(save=True, model_type="DDPG")
 
         rewards.append(env.all_rewards)
-        print(f"Experiment {i+1}/{num_experiments}, Avg. Reward: {np.mean(env.all_rewards):.2f}")
+        differences.append(env.all_differences)
+        print(f"Experiment {i+1}/{num_experiments}, Avg. Reward: {np.mean(env.all_rewards):.2f}, Avg. Difference: {np.mean(env.all_differences):.2f}")
 
     avg_rewards = np.mean(rewards, axis=0)
-    print(f"Average Reward over {num_experiments} experiments: {np.mean(avg_rewards):.2f}")
+    avg_differences = np.mean(differences, axis=0)
     env.plot_avg_rewards(avg_rewards, save=True, model_type="DDPG")
+    env.plot_avg_differences(avg_differences, save=True, model_type="DDPG")
+    print(f"Average Reward over {num_experiments} experiments: {np.mean(avg_rewards):.2f}", f"Average Difference: {np.mean(avg_differences):.2f}")
+
     print("DDPG training complete.")

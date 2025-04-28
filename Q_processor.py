@@ -29,6 +29,7 @@ class ImagePreprocessingQEnv:
         self.current_beta = 0.0
         self.current_alpha = 1.0
         self.all_rewards = []
+        self.all_differences = []
 
     def compute_image_stats(self, img):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -58,11 +59,16 @@ class ImagePreprocessingQEnv:
 
     def get_reward(self, original_detections, adjusted_detections):
         if not adjusted_detections:
+            self.all_differences.append(0.0)
             return -1.0
         
-        original_confidences = sum(det['confidence'] for det in original_detections)
-        adjusted_confidences = sum(det['confidence'] for det in adjusted_detections)
+        original_confidences = sum(det['confidence'] for det in original_detections if det['class_name'] != 'Eye')
+        adjusted_confidences = sum(det['confidence'] for det in adjusted_detections if det['class_name'] != 'Eye')
+        self.all_differences.append(adjusted_confidences - original_confidences)
         reward = adjusted_confidences - original_confidences
+        if reward > 0:
+            reward *= 5 # Amplify positive rewards
+
 
         if self.render:
             print(f"Original Confidence: {original_confidences:.2f}, Adjusted Confidence: {adjusted_confidences:.2f}")
@@ -128,6 +134,28 @@ class ImagePreprocessingQEnv:
             with open("output/Q/avg_rewards.txt", "w") as f:
                 for reward in avg_rewards:
                     f.write(f"{reward}\n")
+
+    def plot_differences(self, save=True, model_type="Q"):
+        plt.figure(figsize=(10, 5))
+        plt.plot(self.all_differences)
+        plt.title("Differences in Confidence Over Time")
+        plt.xlabel("Episode")
+        plt.ylabel("Difference in Confidence")
+        if save:
+            plt.savefig(f"output/{model_type}/differences_plot.png")
+        # plt.show()
+
+
+    def plot_avg_differences(self, avg_differences, save=True, model_type="Q"):
+        plt.figure(figsize=(10, 5))
+        plt.plot(avg_differences)
+        plt.title("Average Differences in Confidence Over Time")
+        plt.xlabel("Episode")
+        plt.ylabel("Average Difference in Confidence")
+        if save:
+            plt.savefig(f"output/{model_type}/avg_differences_plot.png")
+        # plt.show()
+
 
 if __name__ == "__main__":
     num_bins = 10
