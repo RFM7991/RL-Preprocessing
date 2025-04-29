@@ -58,32 +58,40 @@ class ImagePreprocessingQEnv:
         return self.state
 
     def get_reward(self, original_detections, adjusted_detections):
+        # Penalize complete failure
         if not adjusted_detections:
             self.all_differences.append(0.0)
             return -1.0
-        
-        original_confidences = sum(det['confidence'] for det in original_detections if det['class_name'] != 'Eye')
-        adjusted_confidences = sum(det['confidence'] for det in adjusted_detections if det['class_name'] != 'Eye')
-        self.all_differences.append(adjusted_confidences - original_confidences)
-        reward = adjusted_confidences - original_confidences
 
+        # Sum confidences for non-eye classes
+        original_conf = sum(det['confidence'] for det in original_detections if det['class_name'] != 'Eye')
+        adjusted_conf = sum(det['confidence'] for det in adjusted_detections if det['class_name'] != 'Eye')
+        delta_conf = adjusted_conf - original_conf
+        self.all_differences.append(delta_conf)
+
+        # Optional: log-ratio scaling
+        reward = np.log((adjusted_conf + 1e-3) / (original_conf + 1e-3))
+
+        # Optional bonus for new detections
         if len(adjusted_detections) > len(original_detections):
-            reward *= 2
+            reward += 0.5  # Additive, not multiplicative
 
-        # if reward > 0:
-        #     reward *= 5 # Amplify positive rewards
-        # TODO: look at adding reward for adding more detections
-        # explore reintegrating eye detection confidence
+        # Optional clipping to stabilize critic
+        reward = np.clip(reward, -1.0, 1.0)
 
         if self.render:
-            print(f"Original Confidence: {original_confidences:.2f}, Adjusted Confidence: {adjusted_confidences:.2f}")
+            print(f"Original Confidence: {original_conf:.2f}, Adjusted Confidence: {adjusted_conf:.2f}")
             print(f"Reward: {reward:.2f}, Brightness: {self.current_beta:.2f}, Contrast: {self.current_alpha:.2f}")
-            cv2.imshow(f"Reward: {reward}", self.detector.draw_detections(self.image, adjusted_detections))
-            cv2.waitKey(1)
-            cv2.destroyAllWindows()
-
             
+            display_img = self.detector.draw_detections(self.image, adjusted_detections)
+            cv2.imshow("Adjusted Image", display_img)
+            
+            key = cv2.waitKey(10)  # Allow more time for GUI to update
+            if key == ord('q'):
+                self.render = False  # Optional: press 'q' to stop rendering
+
         return reward
+
 
     def step(self, action_index):
         beta_target, alpha_target = self.action_space[action_index]

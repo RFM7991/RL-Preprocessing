@@ -67,7 +67,7 @@ if __name__ == "__main__":
         model_path = "models/YOLO_eye_detector.pt"
         image_folder = "images/no_pupils"
         detector = ObjectDetectorCNN(model_path)
-        env = ImagePreprocessingDQNEnv(detector, image_folder, render=False, num_bins=num_bins)
+        env = ImagePreprocessingDQNEnv(detector, image_folder, render=True, num_bins=num_bins)
 
         policy_net = DQN(input_dim=2, output_dim=num_actions).to(device)
         target_net = DQN(input_dim=2, output_dim=num_actions).to(device)

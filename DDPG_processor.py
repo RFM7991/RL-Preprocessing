@@ -63,7 +63,7 @@ if __name__ == "__main__":
     tau = 0.005
     actor_lr = 1e-4
     critic_lr = 1e-3
-    batch_size = 16
+    batch_size = 64
     memory_capacity = 100000
     num_episodes = 1000
     num_experiments = 20
@@ -77,7 +77,7 @@ if __name__ == "__main__":
         model_path = "models/YOLO_eye_detector.pt"
         image_folder = "images/no_pupils"
         detector = ObjectDetectorCNN(model_path)
-        env = ImagePreprocessingDQNEnv(detector, image_folder, render=False, num_bins=10)
+        env = ImagePreprocessingDQNEnv(detector, image_folder, render=True, num_bins=10)
 
         actor = Actor(input_dim=2, output_dim=2).to(device)
         target_actor = Actor(input_dim=2, output_dim=2).to(device)
