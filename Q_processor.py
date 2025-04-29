@@ -66,9 +66,14 @@ class ImagePreprocessingQEnv:
         adjusted_confidences = sum(det['confidence'] for det in adjusted_detections if det['class_name'] != 'Eye')
         self.all_differences.append(adjusted_confidences - original_confidences)
         reward = adjusted_confidences - original_confidences
-        if reward > 0:
-            reward *= 5 # Amplify positive rewards
 
+        if len(adjusted_detections) > len(original_detections):
+            reward *= 2
+
+        # if reward > 0:
+        #     reward *= 5 # Amplify positive rewards
+        # TODO: look at adding reward for adding more detections
+        # explore reintegrating eye detection confidence
 
         if self.render:
             print(f"Original Confidence: {original_confidences:.2f}, Adjusted Confidence: {adjusted_confidences:.2f}")
@@ -89,6 +94,7 @@ class ImagePreprocessingQEnv:
         self.image = self.apply_adjustments(self.original_image, self.current_beta, self.current_alpha)
 
         original_detections = self.detector.detect_objects(self.detector.preprocess_image_array(self.original_image))
+        
         adjusted_detections = self.detector.detect_objects(self.detector.preprocess_image_array(self.image))
 
         reward = self.get_reward(original_detections, adjusted_detections)
@@ -162,7 +168,7 @@ class ImagePreprocessingQEnv:
         plt.close()
 
 if __name__ == "__main__":
-    num_bins = 10
+    num_bins = 20
     num_actions = num_bins * num_bins
     alpha = 0.1
     gamma = 1.0
@@ -175,7 +181,7 @@ if __name__ == "__main__":
 
     for i in range(num_experiments):
         model_path = "models/YOLO_eye_detector.pt"
-        image_folder = "images/test"
+        image_folder = "images/no_pupils"
         q_table = np.zeros((num_bins, num_bins, num_actions))
         detector = ObjectDetectorCNN(model_path)
         env = ImagePreprocessingQEnv(detector, image_folder, render=False, num_bins=num_bins)

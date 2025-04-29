@@ -63,10 +63,10 @@ if __name__ == "__main__":
     tau = 0.005
     actor_lr = 1e-4
     critic_lr = 1e-3
-    batch_size = 64
+    batch_size = 16
     memory_capacity = 100000
-    num_episodes = 100
-    num_experiments = 2
+    num_episodes = 1000
+    num_experiments = 3
     action_noise_std = 0.1
     rewards = []
     differences = []
@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
     for i in range(num_experiments):
         model_path = "models/YOLO_eye_detector.pt"
-        image_folder = "images/splits"
+        image_folder = "images/no_pupils"
         detector = ObjectDetectorCNN(model_path)
         env = ImagePreprocessingDQNEnv(detector, image_folder, render=False, num_bins=10)
 
@@ -160,6 +160,7 @@ if __name__ == "__main__":
                 past_100_avg_differences = np.mean(env.all_differences[-100]) if len(env.all_differences) >= 100 else np.mean(env.all_differences)
                 print(f"Experiment {i+1}/{num_experiments}, Episode {episode+1}/{num_episodes}, Total Avg. Reward: {np.mean(env.all_rewards):.2f}, 100 Eps Avg. Reward: {past_100_avg_rewards:.2f}, Total Avg. Diff: {np.mean(env.all_differences):.2f}, 100 Eps Diff: {past_100_avg_differences:.2f}")
                 env.plot_rewards(save=True, model_type="DDPG")
+                env.plot_differences(save=True, model_type="DDPG")
 
         rewards.append(env.all_rewards)
         differences.append(env.all_differences)

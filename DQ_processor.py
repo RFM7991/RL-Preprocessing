@@ -56,7 +56,7 @@ if __name__ == "__main__":
     target_update_freq = 10
     memory_capacity = 10000
     num_episodes = 1000
-    num_experiments = 10
+    num_experiments = 3
     rewards = []
     differences = []
 
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     for i in range(num_experiments):
         epsilon = epsilon_start
         model_path = "models/YOLO_eye_detector.pt"
-        image_folder = "images/splits"
+        image_folder = "images/no_pupils"
         detector = ObjectDetectorCNN(model_path)
         env = ImagePreprocessingDQNEnv(detector, image_folder, render=False, num_bins=num_bins)
 
