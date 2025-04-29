@@ -58,36 +58,43 @@ class ImagePreprocessingQEnv:
         return self.state
 
     def get_reward(self, original_detections, adjusted_detections):
-        # Penalize complete failure
-        if not adjusted_detections:
-            self.all_differences.append(0.0)
-            return -1.0
-
         # Sum confidences for non-eye classes
         original_conf = sum(det['confidence'] for det in original_detections if det['class_name'] != 'Eye')
         adjusted_conf = sum(det['confidence'] for det in adjusted_detections if det['class_name'] != 'Eye')
         delta_conf = adjusted_conf - original_conf
+
+        # Save for analysis
         self.all_differences.append(delta_conf)
 
-        # Optional: log-ratio scaling
-        reward = np.log((adjusted_conf + 1e-3) / (original_conf + 1e-3))
+        # Soft penalty for complete failure (still allows learning)
+        if not adjusted_detections:
+            reward = -0.5  # Rather than -1.0
+        else:
+            # Linear or sigmoid delta scoring
+            reward = delta_conf
 
-        # Optional bonus for new detections
-        if len(adjusted_detections) > len(original_detections):
-            reward += 0.5  # Additive, not multiplicative
+            # Optional: confidence-weighted bonus for new detections
+            num_new = max(0, len(adjusted_detections) - len(original_detections))
+            if num_new > 0:
+                bonus = sum(det['confidence'] for det in adjusted_detections[-num_new:]) * 0.1
+                reward += bonus
 
-        # Optional clipping to stabilize critic
+        # Optionally apply log-ratio (if you still like it)
+        # reward = np.log((adjusted_conf + 1e-3) / (original_conf + 1e-3))
+
+        unclipped_reward = reward
         reward = np.clip(reward, -1.0, 1.0)
 
         if self.render:
-            print(f"Original Confidence: {original_conf:.2f}, Adjusted Confidence: {adjusted_conf:.2f}, Delta Confidence: {delta_conf:.2f}, Reward: {reward:.4f}")
-            
+            print(f"Original Confidence: {original_conf:.2f}, Adjusted Confidence: {adjusted_conf:.2f}, "
+                f"Delta Confidence: {delta_conf:.2f}, Raw Reward: {unclipped_reward:.4f}, Clipped: {reward:.4f}")
+
             display_img = self.detector.draw_detections(self.image, adjusted_detections)
             cv2.imshow("Adjusted Image", display_img)
-            
-            key = cv2.waitKey(10)  # Allow more time for GUI to update
+
+            key = cv2.waitKey(10)
             if key == ord('q'):
-                self.render = False  # Optional: press 'q' to stop rendering
+                self.render = False
 
         return reward
 

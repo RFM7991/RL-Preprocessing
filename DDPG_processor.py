@@ -61,13 +61,15 @@ class ImagePreprocessingDQNEnv(ImagePreprocessingQEnv):
 if __name__ == "__main__":
     gamma = 1.0
     tau = 0.005
-    actor_lr = 1e-3
-    critic_lr = 1e-3
+    actor_lr = 1e-4
+    critic_lr = 1e-4
     batch_size = 16
     memory_capacity = 100000
     num_episodes = 10000
     num_experiments = 10
     action_noise_std = 0.1
+    initial_noise_std = 0.2
+    final_noise_std = 0.05
     rewards = []
     differences = []
 
@@ -77,7 +79,7 @@ if __name__ == "__main__":
         model_path = "models/YOLO_eye_detector.pt"
         image_folder = "images/no_pupils"
         detector = ObjectDetectorCNN(model_path)
-        env = ImagePreprocessingDQNEnv(detector, image_folder, render=True, num_bins=10)
+        env = ImagePreprocessingDQNEnv(detector, image_folder, render=False, num_bins=10)
 
         actor = Actor(input_dim=2, output_dim=3).to(device)
         target_actor = Actor(input_dim=2, output_dim=3).to(device)
@@ -99,6 +101,8 @@ if __name__ == "__main__":
             done = False
 
             while not done:
+                noise_decay = max(0, (num_episodes - episode) / num_episodes)
+                action_noise_std = initial_noise_std * noise_decay + final_noise_std * (1 - noise_decay)
                 state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
                 action = actor(state_tensor).cpu().data.numpy().flatten()
                 action += np.random.normal(0, action_noise_std, size=3)
@@ -111,9 +115,6 @@ if __name__ == "__main__":
                 sharpness = 0  # No sharpness adjustment in this version
                 gamma = (action[2] + 1) / 2 * 0.7 + 0.8 # scale to [0.8, 1.5]
 
-                if env.render:
-                    print(f"Episode {episode+1}, Action: {action}, Beta: {beta:.2f}, Alpha: {alpha:.2f}, Sharpness: {sharpness:.2f}, Gamma: {gamma:.2f}")
-
                 beta = action[0] * 60 - 10  # scale back to [-100, 100]
                 alpha = action[1] * 0.3 + 1.5  # scale back to [0.5, 1.5]
                 env.current_beta = beta
@@ -123,6 +124,8 @@ if __name__ == "__main__":
                 original_detections = env.detector.detect_objects(env.detector.preprocess_image_array(env.original_image))
                 adjusted_detections = env.detector.detect_objects(env.detector.preprocess_image_array(env.image))
                 reward = env.get_reward(original_detections, adjusted_detections)
+
+                print(f"Episode {episode+1}, Action: {action}, State: {state}, Beta: {beta:.2f}, Alpha: {alpha:.2f}, Gamma: {gamma:.2f}, Reward: {reward:.4f}, Noise Std: {action_noise_std:.4f}")
 
                 next_state = env.get_state_vector()
                 done = True
