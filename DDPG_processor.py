@@ -104,8 +104,13 @@ if __name__ == "__main__":
                 action += np.random.normal(0, action_noise_std, size=3)
                 action = np.clip(action, -1.0, 1.0)
 
-                #beta = action[0] * 100  # scale back to [-100, 100]
-                #alpha = 1.0 + action[1] * 0.5  # scale back to [0.5, 1.5]
+                beta = action[0] * 60 - 10 
+                alpha = action[1] * 0.3 + 1.5  
+                sharpness = action[2] * 1.5
+                sharpness = max(sharpness, 0)
+
+                if env.render:
+                    print(f"Episode {episode+1}, Action: {action}, Beta: {beta:.2f}, Alpha: {alpha:.2f}, Sharpness: {sharpness:.2f}")
 
                 beta = action[0] * 60 - 10  # scale back to [-100, 100]
                 alpha = action[1] * 0.3 + 1.5  # scale back to [0.5, 1.5]
