@@ -73,6 +73,7 @@ if __name__ == "__main__":
     final_noise_std = 0.05
     rewards = []
     differences = []
+    successful_detections = []
     
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -131,7 +132,7 @@ if __name__ == "__main__":
                 state = next_state
                 total_reward += reward
 
-                print(f"Episode {episode+1}, State: {state}, Action: [{beta:.2f}, {alpha:.2f}], Reward: {reward:.2f}, Total Reward: {total_reward:.2f}")
+                # print(f"Episode {episode+1}, State: {state}, Action: [{beta:.2f}, {alpha:.2f}], Reward: {reward:.2f}, Total Reward: {total_reward:.2f}")
 
                 if len(replay_buffer) > batch_size:
                     states, actions, rewards_batch, next_states, dones = replay_buffer.sample(batch_size)
@@ -169,9 +170,11 @@ if __name__ == "__main__":
             if episode % 100 == 0:
                 past_100_avg_rewards = np.mean(env.all_rewards[-100]) if len(env.all_rewards) >= 100 else np.mean(env.all_rewards)
                 past_100_avg_differences = np.mean(env.all_differences[-100]) if len(env.all_differences) >= 100 else np.mean(env.all_differences)
-                print(f"Experiment {i+1}/{num_experiments}, Episode {episode+1}/{num_episodes}, Total Avg. Reward: {np.mean(env.all_rewards):.2f}, 100 Eps Avg. Reward: {past_100_avg_rewards:.2f}, Total Avg. Diff: {np.mean(env.all_differences):.2f}, 100 Eps Diff: {past_100_avg_differences:.2f}")
+                past_100_avg_successful_detections = np.mean(env.successful_detections[-100]) if len(env.successful_detections) >= 100 else np.mean(env.successful_detections)
+                print(f"Experiment {i+1}/{num_experiments}, Episode {episode+1}/{num_episodes}, Total Avg. Reward: {np.mean(env.all_rewards):.2f}, 100 Eps Avg. Reward: {past_100_avg_rewards:.2f}, Total Avg. Diff: {np.mean(env.all_differences):.2f}, 100 Eps Diff: {past_100_avg_differences:.2f}, Successful Detections: {np.mean(env.successful_detections):.2f}, 100 Eps Successful Detections: {past_100_avg_successful_detections:.2f}")
                 env.plot_rewards(save=True, model_type="DDPG")
                 env.plot_differences(save=True, model_type="DDPG")
+                env.plot_successful_detections(save=True, model_type="DDPG")
 
                 # plot actions 
                 actions_array = np.array(selected_actions)
@@ -197,12 +200,14 @@ if __name__ == "__main__":
 
         rewards.append(env.all_rewards)
         differences.append(env.all_differences)
-        print(f"Experiment {i+1}/{num_experiments}, Avg. Reward: {np.mean(env.all_rewards):.2f}, Avg. Difference: {np.mean(env.all_differences):.2f}")
+        successful_detections.append(env.successful_detections)
+        print(f"Experiment {i+1}/{num_experiments}, Avg. Reward: {np.mean(env.all_rewards):.2f}, Avg. Difference: {np.mean(env.all_differences):.2f}, Successful Detections: {np.mean(env.successful_detections)}")
 
         avg_rewards = np.mean(rewards, axis=0)
         avg_differences = np.mean(differences, axis=0)
         env.plot_avg_rewards(avg_rewards, save=True, model_type="DDPG")
         env.plot_avg_differences(avg_differences, save=True, model_type="DDPG")
-        print(f"Average Reward over {num_experiments} experiments: {np.mean(avg_rewards):.2f}", f"Average Difference: {np.mean(avg_differences):.2f}")
+        env.plot_avg_successful_detections(np.mean(successful_detections, axis=0), save=True, model_type="DDPG")
+        print(f"Average Reward over {num_experiments} experiments: {np.mean(avg_rewards):.2f}", f"Average Difference: {np.mean(avg_differences):.2f}, Successful Detections: {np.mean(successful_detections):.2f}")
 
     print("DDPG training complete.")

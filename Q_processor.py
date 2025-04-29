@@ -30,6 +30,7 @@ class ImagePreprocessingQEnv:
         self.current_alpha = 1.0
         self.all_rewards = []
         self.all_differences = []
+        self.successful_detections = []
 
     def compute_image_stats(self, img):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -63,6 +64,8 @@ class ImagePreprocessingQEnv:
         adjusted_conf = sum(det['confidence'] for det in adjusted_detections if det['class_name'] != 'Eye')
         delta_conf = adjusted_conf - original_conf
 
+        self.successful_detections.append(len(adjusted_detections))
+
         # Save for analysis
         self.all_differences.append(delta_conf)
 
@@ -79,15 +82,16 @@ class ImagePreprocessingQEnv:
                 bonus = sum(det['confidence'] for det in adjusted_detections[-num_new:]) * 0.1
                 reward += bonus
 
+                
         # Optionally apply log-ratio (if you still like it)
-        # reward = np.log((adjusted_conf + 1e-3) / (original_conf + 1e-3))
+        reward = np.log((adjusted_conf + 1e-3) / (original_conf + 1e-3))
 
         unclipped_reward = reward
         reward = np.clip(reward, -1.0, 1.0)
 
         if self.render:
-            print(f"Original Confidence: {original_conf:.2f}, Adjusted Confidence: {adjusted_conf:.2f}, "
-                f"Delta Confidence: {delta_conf:.2f}, Raw Reward: {unclipped_reward:.4f}, Clipped: {reward:.4f}")
+            # print(f"Original Confidence: {original_conf:.2f}, Adjusted Confidence: {adjusted_conf:.2f}, "
+            #     f"Delta Confidence: {delta_conf:.2f}, Raw Reward: {unclipped_reward:.4f}, Clipped: {reward:.4f}")
 
             display_img = self.detector.draw_detections(self.image, adjusted_detections)
             cv2.imshow("Adjusted Image", display_img)
@@ -189,6 +193,28 @@ class ImagePreprocessingQEnv:
             plt.savefig(f"output/{model_type}/avg_differences_plot.png")
         # plt.show()
 
+        plt.close()
+    
+    def plot_successful_detections(self, save=True, model_type="Q"):
+        plt.figure(figsize=(20, 10))
+        plt.plot(self.successful_detections)
+        plt.title("Successful Detections Over Time")
+        plt.xlabel("Episode")
+        plt.ylabel("Number of Successful Detections")
+        if save:
+            plt.savefig(f"output/{model_type}/successful_detections_plot.png")
+        # plt.show()
+        plt.close()
+
+    def plot_avg_successful_detections(self, avg_successful_detections, save=True, model_type="Q"):
+        plt.figure(figsize=(20, 10))
+        plt.plot(avg_successful_detections)
+        plt.title("Average Successful Detections Over Time")
+        plt.xlabel("Episode")
+        plt.ylabel("Average Number of Successful Detections")
+        if save:
+            plt.savefig(f"output/{model_type}/avg_successful_detections_plot.png")
+        # plt.show()
         plt.close()
 
 if __name__ == "__main__":
