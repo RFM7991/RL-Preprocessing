@@ -80,8 +80,7 @@ class ImagePreprocessingQEnv:
         reward = np.clip(reward, -1.0, 1.0)
 
         if self.render:
-            print(f"Original Confidence: {original_conf:.2f}, Adjusted Confidence: {adjusted_conf:.2f}")
-            print(f"Reward: {reward:.2f}, Brightness: {self.current_beta:.2f}, Contrast: {self.current_alpha:.2f}")
+            print(f"Original Confidence: {original_conf:.2f}, Adjusted Confidence: {adjusted_conf:.2f}, Delta Confidence: {delta_conf:.2f}, Reward: {reward:.4f}")
             
             display_img = self.detector.draw_detections(self.image, adjusted_detections)
             cv2.imshow("Adjusted Image", display_img)
@@ -115,9 +114,13 @@ class ImagePreprocessingQEnv:
         self.all_rewards.append(reward)
         return self.state, reward, done
 
-    def apply_adjustments(self, img, beta, alpha):
+    def apply_adjustments(self, img, beta, alpha, sharpness=0.0):
         adjusted = cv2.convertScaleAbs(img, alpha=alpha, beta=beta)
+        if sharpness > 0:
+            blurred = cv2.GaussianBlur(adjusted, (0, 0), sigmaX=3)
+            adjusted = cv2.addWeighted(adjusted, 1 + sharpness, blurred, -sharpness, 0)
         return adjusted
+
 
     def plot_rewards(self, save=True, model_type="Q"):
         plt.plot(self.all_rewards)
