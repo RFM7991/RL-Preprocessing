@@ -66,7 +66,7 @@ if __name__ == "__main__":
     batch_size = 16
     memory_capacity = 100000
     num_episodes = 1000
-    num_experiments = 3
+    num_experiments = 20
     action_noise_std = 0.1
     rewards = []
     differences = []
