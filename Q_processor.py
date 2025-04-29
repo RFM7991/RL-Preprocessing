@@ -191,6 +191,12 @@ class ImagePreprocessingQEnv:
         plt.ylabel("Average Difference in Confidence")
         if save:
             plt.savefig(f"output/{model_type}/avg_differences_plot.png")
+
+            # Save differences to a text file
+            with open("output/Q/avg_differences.txt", "w") as f:
+                for diff in avg_differences:
+                    f.write(f"{diff}\n")
+
         # plt.show()
 
         plt.close()
@@ -214,6 +220,12 @@ class ImagePreprocessingQEnv:
         plt.ylabel("Average Number of Successful Detections")
         if save:
             plt.savefig(f"output/{model_type}/avg_successful_detections_plot.png")
+
+            # Save successful detections to a text file
+            with open("output/Q/successful_detections.txt", "w") as f:
+                for detection in avg_successful_detections:
+                    f.write(f"{detection}\n")
+        
         # plt.show()
         plt.close()
 
