@@ -64,12 +64,12 @@ if __name__ == "__main__":
     tau = 0.005
     actor_lr = 1e-4
     critic_lr = 1e-4
-    batch_size = 16
+    batch_size = 4
     memory_capacity = 100000
     num_episodes = 10000
     num_experiments = 10
     action_noise_std = 0.1
-    initial_noise_std = 0.2
+    initial_noise_std = 0.1
     final_noise_std = 0.05
     rewards = []
     differences = []
@@ -83,12 +83,12 @@ if __name__ == "__main__":
         detector = ObjectDetectorCNN(model_path)
         env = ImagePreprocessingDQNEnv(detector, image_folder, render=False, num_bins=10)
 
-        actor = Actor(input_dim=2, output_dim=3).to(device)
-        target_actor = Actor(input_dim=2, output_dim=3).to(device)
+        actor = Actor(input_dim=2, output_dim=2).to(device)
+        target_actor = Actor(input_dim=2, output_dim=2).to(device)
         target_actor.load_state_dict(actor.state_dict())
 
-        critic = Critic(input_dim=2, action_dim=3).to(device)
-        target_critic = Critic(input_dim=2, action_dim=3).to(device)
+        critic = Critic(input_dim=2, action_dim=2).to(device)
+        target_critic = Critic(input_dim=2, action_dim=2).to(device)
         target_critic.load_state_dict(critic.state_dict())
 
         actor_optimizer = optim.Adam(actor.parameters(), lr=actor_lr)
@@ -109,26 +109,20 @@ if __name__ == "__main__":
                 action_noise_std = initial_noise_std * noise_decay + final_noise_std * (1 - noise_decay)
                 state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
                 action = actor(state_tensor).cpu().data.numpy().flatten()
-                action += np.random.normal(0, action_noise_std, size=3)
+                action += np.random.normal(0, action_noise_std, size=2)
                 action = np.clip(action, -1.0, 1.0)
-
-                # sharpness = action[2] * 1.5
-                # sharpness = max(sharpness, 0)
-                sharpness = 0  # No sharpness adjustment in this version
-                gamma = (action[2] + 1) / 2 * 0.7 + 0.8 # scale to [0.8, 1.5]
 
                 beta = action[0] * 100  # scale to [0, 100]
                 alpha = action[1] * 0.3 + 1.5  # scale back to [0.5, 1.5]
                 env.current_beta = beta
                 env.current_alpha = alpha
-                env.image = env.apply_adjustments(env.original_image, beta, alpha, sharpness=0, gamma=gamma)
+                env.image = env.apply_adjustments(env.original_image, beta, alpha)
 
                 original_detections = env.detector.detect_objects(env.detector.preprocess_image_array(env.original_image))
                 adjusted_detections = env.detector.detect_objects(env.detector.preprocess_image_array(env.image))
                 reward = env.get_reward(original_detections, adjusted_detections)
 
-                selected_actions.append([beta, alpha, gamma])
-                # print(f"Episode {episode+1}, Action: {action}, State: {state}, Beta: {beta:.2f}, Alpha: {alpha:.2f}, Gamma: {gamma:.2f}, Reward: {reward:.4f}, Noise Std: {action_noise_std:.4f}")
+                selected_actions.append([beta, alpha])
 
                 next_state = env.get_state_vector()
                 done = True
@@ -136,6 +130,8 @@ if __name__ == "__main__":
                 replay_buffer.push(state, action, reward, next_state, done)
                 state = next_state
                 total_reward += reward
+
+                print(f"Episode {episode+1}, State: {state}, Action: [{beta:.2f}, {alpha:.2f}], Reward: {reward:.2f}, Total Reward: {total_reward:.2f}")
 
                 if len(replay_buffer) > batch_size:
                     states, actions, rewards_batch, next_states, dones = replay_buffer.sample(batch_size)
@@ -193,13 +189,6 @@ if __name__ == "__main__":
                 ax2.plot(episodes, actions_array[:, 1], color='tab:orange', label='Contrast Adjustment')
                 ax2.set_ylabel('Contrast', color='tab:orange')
                 ax2.tick_params(axis='y', labelcolor='tab:orange')
-
-                # Gamma on a third y-axis (optional but can help)
-                ax3 = ax1.twinx()
-                ax3.spines["right"].set_position(("axes", 1.15))
-                ax3.plot(episodes, actions_array[:, 2], color='tab:green', label='Gamma Adjustment')
-                ax3.set_ylabel('Gamma', color='tab:green')
-                ax3.tick_params(axis='y', labelcolor='tab:green')
 
                 plt.title("Actions Over Time")
                 fig.tight_layout()
