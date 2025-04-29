@@ -135,6 +135,7 @@ class ImagePreprocessingQEnv:
         return adjusted
 
     def plot_rewards(self, save=True, model_type="Q"):
+        plt.figure(figsize=(20, 10))
         plt.plot(self.all_rewards)
         plt.title("Rewards Over Time")
         plt.xlabel("Episode")
@@ -151,7 +152,7 @@ class ImagePreprocessingQEnv:
         plt.close()
     
     def plot_avg_rewards(self, avg_rewards, save=True, model_type="Q"):
-        plt.figure(figsize=(10, 5))
+        plt.figure(figsize=(20, 10))
         plt.plot(avg_rewards)
         plt.title("Average Rewards Over Time")
         plt.xlabel("Episode")
@@ -167,7 +168,7 @@ class ImagePreprocessingQEnv:
         plt.close()
 
     def plot_differences(self, save=True, model_type="Q"):
-        plt.figure(figsize=(10, 5))
+        plt.figure(figsize=(20, 10))
         plt.plot(self.all_differences)
         plt.title("Differences in Confidence Over Time")
         plt.xlabel("Episode")
@@ -179,7 +180,7 @@ class ImagePreprocessingQEnv:
 
 
     def plot_avg_differences(self, avg_differences, save=True, model_type="Q"):
-        plt.figure(figsize=(10, 5))
+        plt.figure(figsize=(20, 10))
         plt.plot(avg_differences)
         plt.title("Average Differences in Confidence Over Time")
         plt.xlabel("Episode")

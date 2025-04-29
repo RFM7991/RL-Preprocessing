@@ -14,9 +14,9 @@ from collections import deque
 class Actor(nn.Module):
     def __init__(self, input_dim, output_dim):
         super(Actor, self).__init__()
-        self.fc1 = nn.Linear(input_dim, 64)
-        self.fc2 = nn.Linear(64, 128)
-        self.fc3 = nn.Linear(128, output_dim)
+        self.fc1 = nn.Linear(input_dim, 32)
+        self.fc2 = nn.Linear(32, 64)
+        self.fc3 = nn.Linear(64, output_dim)
 
     def forward(self, x):
         x = torch.relu(self.fc1(x))
@@ -27,9 +27,9 @@ class Actor(nn.Module):
 class Critic(nn.Module):
     def __init__(self, input_dim, action_dim):
         super(Critic, self).__init__()
-        self.fc1 = nn.Linear(input_dim + action_dim, 64)
-        self.fc2 = nn.Linear(64, 128)
-        self.fc3 = nn.Linear(128, 1)
+        self.fc1 = nn.Linear(input_dim + action_dim, 32)
+        self.fc2 = nn.Linear(32, 32)
+        self.fc3 = nn.Linear(32, 1)
 
     def forward(self, state, action):
         x = torch.cat([state, action], dim=1)
@@ -58,6 +58,7 @@ class ImagePreprocessingDQNEnv(ImagePreprocessingQEnv):
         brightness, contrast = self.compute_image_stats(self.image)
         return np.array([brightness, contrast])
 
+
 if __name__ == "__main__":
     gamma = 1.0
     tau = 0.005
@@ -72,6 +73,7 @@ if __name__ == "__main__":
     final_noise_std = 0.05
     rewards = []
     differences = []
+    
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -94,6 +96,8 @@ if __name__ == "__main__":
 
         replay_buffer = ReplayBuffer(memory_capacity)
 
+        selected_actions = []
+
         for episode in range(num_episodes):
             env.reset()
             state = env.get_state_vector()
@@ -108,14 +112,12 @@ if __name__ == "__main__":
                 action += np.random.normal(0, action_noise_std, size=3)
                 action = np.clip(action, -1.0, 1.0)
 
-                beta = action[0] * 60 - 10 
-                alpha = action[1] * 0.3 + 1.5  
                 # sharpness = action[2] * 1.5
                 # sharpness = max(sharpness, 0)
                 sharpness = 0  # No sharpness adjustment in this version
                 gamma = (action[2] + 1) / 2 * 0.7 + 0.8 # scale to [0.8, 1.5]
 
-                beta = action[0] * 60 - 10  # scale back to [-100, 100]
+                beta = action[0] * 100  # scale to [0, 100]
                 alpha = action[1] * 0.3 + 1.5  # scale back to [0.5, 1.5]
                 env.current_beta = beta
                 env.current_alpha = alpha
@@ -125,7 +127,8 @@ if __name__ == "__main__":
                 adjusted_detections = env.detector.detect_objects(env.detector.preprocess_image_array(env.image))
                 reward = env.get_reward(original_detections, adjusted_detections)
 
-                print(f"Episode {episode+1}, Action: {action}, State: {state}, Beta: {beta:.2f}, Alpha: {alpha:.2f}, Gamma: {gamma:.2f}, Reward: {reward:.4f}, Noise Std: {action_noise_std:.4f}")
+                selected_actions.append([beta, alpha, gamma])
+                # print(f"Episode {episode+1}, Action: {action}, State: {state}, Beta: {beta:.2f}, Alpha: {alpha:.2f}, Gamma: {gamma:.2f}, Reward: {reward:.4f}, Noise Std: {action_noise_std:.4f}")
 
                 next_state = env.get_state_vector()
                 done = True
@@ -174,14 +177,43 @@ if __name__ == "__main__":
                 env.plot_rewards(save=True, model_type="DDPG")
                 env.plot_differences(save=True, model_type="DDPG")
 
+                # plot actions 
+                actions_array = np.array(selected_actions)
+                episodes = np.arange(len(actions_array))
+
+                fig, ax1 = plt.subplots(figsize=(20, 10))
+
+                # Brightness (Beta) on primary y-axis
+                ax1.plot(episodes, actions_array[:, 0], color='tab:blue', label='Brightness Adjustment')
+                ax1.set_ylabel('Brightness', color='tab:blue')
+                ax1.tick_params(axis='y', labelcolor='tab:blue')
+
+                # Contrast (Alpha) on secondary y-axis
+                ax2 = ax1.twinx()
+                ax2.plot(episodes, actions_array[:, 1], color='tab:orange', label='Contrast Adjustment')
+                ax2.set_ylabel('Contrast', color='tab:orange')
+                ax2.tick_params(axis='y', labelcolor='tab:orange')
+
+                # Gamma on a third y-axis (optional but can help)
+                ax3 = ax1.twinx()
+                ax3.spines["right"].set_position(("axes", 1.15))
+                ax3.plot(episodes, actions_array[:, 2], color='tab:green', label='Gamma Adjustment')
+                ax3.set_ylabel('Gamma', color='tab:green')
+                ax3.tick_params(axis='y', labelcolor='tab:green')
+
+                plt.title("Actions Over Time")
+                fig.tight_layout()
+                plt.savefig(f"output/DDPG/actions_plot_experiment_{i+1}.png")
+                plt.close()
+
         rewards.append(env.all_rewards)
         differences.append(env.all_differences)
         print(f"Experiment {i+1}/{num_experiments}, Avg. Reward: {np.mean(env.all_rewards):.2f}, Avg. Difference: {np.mean(env.all_differences):.2f}")
 
-    avg_rewards = np.mean(rewards, axis=0)
-    avg_differences = np.mean(differences, axis=0)
-    env.plot_avg_rewards(avg_rewards, save=True, model_type="DDPG")
-    env.plot_avg_differences(avg_differences, save=True, model_type="DDPG")
-    print(f"Average Reward over {num_experiments} experiments: {np.mean(avg_rewards):.2f}", f"Average Difference: {np.mean(avg_differences):.2f}")
+        avg_rewards = np.mean(rewards, axis=0)
+        avg_differences = np.mean(differences, axis=0)
+        env.plot_avg_rewards(avg_rewards, save=True, model_type="DDPG")
+        env.plot_avg_differences(avg_differences, save=True, model_type="DDPG")
+        print(f"Average Reward over {num_experiments} experiments: {np.mean(avg_rewards):.2f}", f"Average Difference: {np.mean(avg_differences):.2f}")
 
     print("DDPG training complete.")
