@@ -77,7 +77,7 @@ if __name__ == "__main__":
         model_path = "models/YOLO_eye_detector.pt"
         image_folder = "images/no_pupils"
         detector = ObjectDetectorCNN(model_path)
-        env = ImagePreprocessingDQNEnv(detector, image_folder, render=False, num_bins=10)
+        env = ImagePreprocessingDQNEnv(detector, image_folder, render=True, num_bins=10)
 
         actor = Actor(input_dim=2, output_dim=3).to(device)
         target_actor = Actor(input_dim=2, output_dim=3).to(device)
@@ -106,17 +106,19 @@ if __name__ == "__main__":
 
                 beta = action[0] * 60 - 10 
                 alpha = action[1] * 0.3 + 1.5  
-                sharpness = action[2] * 1.5
-                sharpness = max(sharpness, 0)
+                # sharpness = action[2] * 1.5
+                # sharpness = max(sharpness, 0)
+                sharpness = 0  # No sharpness adjustment in this version
+                gamma = (action[2] + 1) / 2 * 0.7 + 0.8 # scale to [0.8, 1.5]
 
                 if env.render:
-                    print(f"Episode {episode+1}, Action: {action}, Beta: {beta:.2f}, Alpha: {alpha:.2f}, Sharpness: {sharpness:.2f}")
+                    print(f"Episode {episode+1}, Action: {action}, Beta: {beta:.2f}, Alpha: {alpha:.2f}, Sharpness: {sharpness:.2f}, Gamma: {gamma:.2f}")
 
                 beta = action[0] * 60 - 10  # scale back to [-100, 100]
                 alpha = action[1] * 0.3 + 1.5  # scale back to [0.5, 1.5]
                 env.current_beta = beta
                 env.current_alpha = alpha
-                env.image = env.apply_adjustments(env.original_image, beta, alpha)
+                env.image = env.apply_adjustments(env.original_image, beta, alpha, sharpness=0, gamma=gamma)
 
                 original_detections = env.detector.detect_objects(env.detector.preprocess_image_array(env.original_image))
                 adjusted_detections = env.detector.detect_objects(env.detector.preprocess_image_array(env.image))

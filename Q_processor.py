@@ -114,13 +114,18 @@ class ImagePreprocessingQEnv:
         self.all_rewards.append(reward)
         return self.state, reward, done
 
-    def apply_adjustments(self, img, beta, alpha, sharpness=0.0):
+    def apply_adjustments(self, img, beta, alpha, sharpness=0.0, gamma=1.0):
         adjusted = cv2.convertScaleAbs(img, alpha=alpha, beta=beta)
         if sharpness > 0:
             blurred = cv2.GaussianBlur(adjusted, (0, 0), sigmaX=3)
             adjusted = cv2.addWeighted(adjusted, 1 + sharpness, blurred, -sharpness, 0)
-        return adjusted
 
+        if gamma != 1.0:
+            inv_gamma = 1.0 / gamma
+            table = np.array([(i / 255.0) ** inv_gamma * 255 for i in np.arange(256)]).astype("uint8")
+            adjusted = cv2.LUT(adjusted, table)
+
+        return adjusted
 
     def plot_rewards(self, save=True, model_type="Q"):
         plt.plot(self.all_rewards)
