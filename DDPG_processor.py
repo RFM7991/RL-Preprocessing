@@ -14,8 +14,8 @@ from collections import deque
 class Actor(nn.Module):
     def __init__(self, input_dim, output_dim):
         super(Actor, self).__init__()
-        self.fc1 = nn.Linear(input_dim, 128)
-        self.fc2 = nn.Linear(128, 128)
+        self.fc1 = nn.Linear(input_dim, 64)
+        self.fc2 = nn.Linear(64, 128)
         self.fc3 = nn.Linear(128, output_dim)
 
     def forward(self, x):
@@ -27,8 +27,8 @@ class Actor(nn.Module):
 class Critic(nn.Module):
     def __init__(self, input_dim, action_dim):
         super(Critic, self).__init__()
-        self.fc1 = nn.Linear(input_dim + action_dim, 128)
-        self.fc2 = nn.Linear(128, 128)
+        self.fc1 = nn.Linear(input_dim + action_dim, 64)
+        self.fc2 = nn.Linear(64, 128)
         self.fc3 = nn.Linear(128, 1)
 
     def forward(self, state, action):
@@ -59,14 +59,14 @@ class ImagePreprocessingDQNEnv(ImagePreprocessingQEnv):
         return np.array([brightness, contrast])
 
 if __name__ == "__main__":
-    gamma = 0.99
+    gamma = 1.0
     tau = 0.005
-    actor_lr = 1e-4
+    actor_lr = 1e-3
     critic_lr = 1e-3
-    batch_size = 8
+    batch_size = 16
     memory_capacity = 100000
-    num_episodes = 20000
-    num_experiments = 1
+    num_episodes = 10000
+    num_experiments = 10
     action_noise_std = 0.1
     rewards = []
     differences = []
@@ -77,7 +77,7 @@ if __name__ == "__main__":
         model_path = "models/YOLO_eye_detector.pt"
         image_folder = "images/no_pupils"
         detector = ObjectDetectorCNN(model_path)
-        env = ImagePreprocessingDQNEnv(detector, image_folder, render=True, num_bins=10)
+        env = ImagePreprocessingDQNEnv(detector, image_folder, render=False, num_bins=10)
 
         actor = Actor(input_dim=2, output_dim=2).to(device)
         target_actor = Actor(input_dim=2, output_dim=2).to(device)
@@ -104,9 +104,11 @@ if __name__ == "__main__":
                 action += np.random.normal(0, action_noise_std, size=2)
                 action = np.clip(action, -1.0, 1.0)
 
-                beta = action[0] * 100  # scale back to [-100, 100]
-                alpha = 1.0 + action[1] * 0.5  # scale back to [0.5, 1.5]
+                #beta = action[0] * 100  # scale back to [-100, 100]
+                #alpha = 1.0 + action[1] * 0.5  # scale back to [0.5, 1.5]
 
+                beta = action[0] * 60 - 10  # scale back to [-100, 100]
+                alpha = action[1] * 0.3 + 1.5  # scale back to [0.5, 1.5]
                 env.current_beta = beta
                 env.current_alpha = alpha
                 env.image = env.apply_adjustments(env.original_image, beta, alpha)
