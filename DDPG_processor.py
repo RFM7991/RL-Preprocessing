@@ -63,10 +63,10 @@ if __name__ == "__main__":
     tau = 0.005
     actor_lr = 1e-4
     critic_lr = 1e-3
-    batch_size = 16
+    batch_size = 8
     memory_capacity = 100000
-    num_episodes = 1000
-    num_experiments = 20
+    num_episodes = 20000
+    num_experiments = 1
     action_noise_std = 0.1
     rewards = []
     differences = []
