@@ -78,7 +78,7 @@ if __name__ == "__main__":
     batch_size = 32
     memory_capacity = 100000
     num_episodes = 5000
-    num_experiments = 25
+    num_experiments = 5
     num_steps = 1
     action_noise_std = 0.1
     initial_noise_std = 0.1
@@ -86,8 +86,13 @@ if __name__ == "__main__":
     rewards = []
     differences = []
     successful_detections = []
+    # set seed 
+    random.seed(21)
+    np.random.seed(21)
+    torch.manual_seed(21)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(21)
     
-
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     for i in range(num_experiments):
@@ -213,7 +218,7 @@ if __name__ == "__main__":
 
                 plt.title("Actions Over Time")
                 fig.tight_layout()
-                plt.savefig(f"output/DDPG/actions_plot_experiment_{i+1}.png")
+                plt.savefig(f"output/DDPG/actions_plot.png")
                 plt.close()
 
         rewards.append(env.all_rewards)

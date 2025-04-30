@@ -7,7 +7,10 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 class ImagePreprocessingQEnv:
-    def __init__(self, detector, image_folder, render=False, num_bins=20):
+    def __init__(self, detector, image_folder, render=False, num_bins=20, seed=21):
+        np.random.seed(seed)
+        random.seed(seed)
+            
         self.detector = detector
         self.image_folder = Path(__file__).resolve().parent / image_folder
         self.image_paths = [os.path.join(self.image_folder, f) for f in os.listdir(self.image_folder) if f.endswith(('.jpg', '.png'))]

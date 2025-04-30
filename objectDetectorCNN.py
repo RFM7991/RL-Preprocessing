@@ -7,11 +7,16 @@ from ultralytics import YOLO
 from torchvision import transforms
 
 class ObjectDetectorCNN:
-    def __init__(self, model_path):
+    def __init__(self, model_path, seed=21):
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
+            
         self.model_path = Path(__file__).resolve().parent / model_path
         self.model = self.load_model()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
+
     
     def load_model(self):
         if not os.path.exists(self.model_path):
