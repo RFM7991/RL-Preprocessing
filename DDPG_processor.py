@@ -11,6 +11,11 @@ import torch.nn as nn
 import torch.optim as optim
 from collections import deque
 
+# TODO: evluate the model on a test set of images
+# do 20/80 # train/test split
+# look for similat results 
+# play with steps 
+
 class Actor(nn.Module):
     def __init__(self, input_dim, output_dim):
         super(Actor, self).__init__()
@@ -68,7 +73,7 @@ if __name__ == "__main__":
     memory_capacity = 100000
     num_episodes = 100000
     num_experiments = 1
-    num_steps = 10
+    num_steps = 100
     action_noise_std = 0.1
     initial_noise_std = 0.1
     final_noise_std = 0.05
@@ -218,3 +223,7 @@ if __name__ == "__main__":
         print(f"Average Reward over {num_experiments} experiments: {np.mean(avg_rewards):.2f}", f"Average Difference: {np.mean(avg_differences):.2f}, Successful Detections: {np.mean(successful_detections):.2f}")
 
     print("DDPG training complete.")
+    # save the model
+    torch.save(actor.state_dict(), "models/DDPG_actor.pth")
+    torch.save(critic.state_dict(), "models/DDPG_critic.pth")
+    print("Models saved.")
