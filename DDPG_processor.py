@@ -18,7 +18,9 @@ from collections import deque
 # look for similat results 
 # play with steps 
 # if needed: add all the YOLO training data, just hold out test set for CNN performance evaluation
-# 
+# ablate brightness and contrast, see if one is more important than the other
+# then explore gamma correction, histogram equalization, CLAHE, etc. 
+# try CNN based input for RL 
 
 class Actor(nn.Module):
     def __init__(self, input_dim, output_dim):
@@ -75,8 +77,8 @@ if __name__ == "__main__":
     critic_lr = 1e-3
     batch_size = 32
     memory_capacity = 100000
-    num_episodes = 20000
-    num_experiments = 5
+    num_episodes = 5000
+    num_experiments = 25
     num_steps = 1
     action_noise_std = 0.1
     initial_noise_std = 0.1
