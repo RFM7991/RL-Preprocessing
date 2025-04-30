@@ -75,7 +75,7 @@ class ImagePreprocessingQEnv:
 
         # Optional: confidence-weighted bonus for new detections
         if len(adjusted_detections) > len(original_detections):
-            reward += 1 
+            reward *= 5
 
         # Optionally apply log-ratio (if you still like it)
         reward = np.log((adjusted_conf + 1e-3) / (original_conf + 1e-3))

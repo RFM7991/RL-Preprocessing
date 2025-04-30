@@ -62,12 +62,13 @@ class ImagePreprocessingDQNEnv(ImagePreprocessingQEnv):
 if __name__ == "__main__":
     gamma = 1.0
     tau = 0.005
-    actor_lr = 1e-4
-    critic_lr = 1e-4
-    batch_size = 4
+    actor_lr = 1e-3
+    critic_lr = 1e-3
+    batch_size = 32
     memory_capacity = 100000
-    num_episodes = 10
-    num_experiments = 2
+    num_episodes = 100000
+    num_experiments = 1
+    num_steps = 10
     action_noise_std = 0.1
     initial_noise_std = 0.1
     final_noise_std = 0.05
@@ -80,9 +81,9 @@ if __name__ == "__main__":
 
     for i in range(num_experiments):
         model_path = "models/YOLO_eye_detector.pt"
-        image_folder = "images/no_pupils"
+        image_folder = "images/pupils_xor_iris"
         detector = ObjectDetectorCNN(model_path)
-        env = ImagePreprocessingDQNEnv(detector, image_folder, render=True, num_bins=10)
+        env = ImagePreprocessingDQNEnv(detector, image_folder, render=False)
 
         actor = Actor(input_dim=2, output_dim=2).to(device)
         target_actor = Actor(input_dim=2, output_dim=2).to(device)
@@ -105,7 +106,9 @@ if __name__ == "__main__":
             total_reward = 0
             done = False
 
-            while not done:
+            for step in range(num_steps):
+                if done:
+                    break
                 noise_decay = max(0, (num_episodes - episode) / num_episodes)
                 action_noise_std = initial_noise_std * noise_decay + final_noise_std * (1 - noise_decay)
                 state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
@@ -126,11 +129,15 @@ if __name__ == "__main__":
                 selected_actions.append([beta, alpha])
 
                 next_state = env.get_state_vector()
-                done = True
+                
+                if reward > 0:
+                    done = True
 
                 replay_buffer.push(state, action, reward, next_state, done)
                 state = next_state
                 total_reward += reward
+
+                # print(f"Episode {episode+1}, Step {step+1}, State: {state}, Action: [{beta:.2f}, {alpha:.2f}], Reward: {reward:.2f}, Total Reward: {total_reward:.2f}")
 
                 # print(f"Episode {episode+1}, State: {state}, Action: [{beta:.2f}, {alpha:.2f}], Reward: {reward:.2f}, Total Reward: {total_reward:.2f}")
 
