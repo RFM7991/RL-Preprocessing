@@ -75,7 +75,7 @@ class ImagePreprocessingQEnv:
 
         # Optional: confidence-weighted bonus for new detections
         if len(adjusted_detections) > len(original_detections):
-            reward *= 5
+            reward += 1
 
         # Optionally apply log-ratio (if you still like it)
         reward = np.log((adjusted_conf + 1e-3) / (original_conf + 1e-3))
@@ -237,7 +237,7 @@ if __name__ == "__main__":
         image_folder = "images/no_pupils"
         q_table = np.zeros((num_bins, num_bins, num_actions))
         detector = ObjectDetectorCNN(model_path)
-        env = ImagePreprocessingQEnv(detector, image_folder, render=False, num_bins=num_bins)
+        env = ImagePreprocessingQEnv(detector, image_folder, render=True, num_bins=num_bins)
 
         for episode in range(num_episodes):
             state = env.reset()
