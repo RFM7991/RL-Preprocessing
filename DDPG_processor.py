@@ -87,11 +87,11 @@ if __name__ == "__main__":
     differences = []
     successful_detections = []
     # set seed 
-    random.seed(21)
-    np.random.seed(21)
-    torch.manual_seed(21)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(21)
+    # random.seed(21)
+    # np.random.seed(21)
+    # torch.manual_seed(21)
+    # if torch.cuda.is_available():
+    #     torch.cuda.manual_seed_all(21)
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

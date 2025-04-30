@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 
 class ImagePreprocessingQEnv:
     def __init__(self, detector, image_folder, render=False, num_bins=20, seed=21):
-        np.random.seed(seed)
-        random.seed(seed)
+        # np.random.seed(seed)
+        # random.seed(seed)
             
         self.detector = detector
         self.image_folder = Path(__file__).resolve().parent / image_folder
