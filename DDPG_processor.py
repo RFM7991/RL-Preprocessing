@@ -11,10 +11,14 @@ import torch.nn as nn
 import torch.optim as optim
 from collections import deque
 
-# TODO: evluate the model on a test set of images
+# TODO:
+# look at reward function
+#  evluate the model on a test set of images
 # do 20/80 # train/test split
 # look for similat results 
 # play with steps 
+# if needed: add all the YOLO training data, just hold out test set for CNN performance evaluation
+# 
 
 class Actor(nn.Module):
     def __init__(self, input_dim, output_dim):
@@ -71,9 +75,9 @@ if __name__ == "__main__":
     critic_lr = 1e-3
     batch_size = 32
     memory_capacity = 100000
-    num_episodes = 100000
-    num_experiments = 1
-    num_steps = 100
+    num_episodes = 20000
+    num_experiments = 5
+    num_steps = 1
     action_noise_std = 0.1
     initial_noise_std = 0.1
     final_noise_std = 0.05
