@@ -64,25 +64,19 @@ class ImagePreprocessingQEnv:
         adjusted_conf = sum(det['confidence'] for det in adjusted_detections if det['class_name'] != 'Eye')
         delta_conf = adjusted_conf - original_conf
 
+        # Adjust detections based on confidence threshold
         self.successful_detections.append(len(adjusted_detections))
 
         # Save for analysis
         self.all_differences.append(delta_conf)
 
-        # Soft penalty for complete failure (still allows learning)
-        if not adjusted_detections:
-            reward = -0.5  # Rather than -1.0
-        else:
-            # Linear or sigmoid delta scoring
-            reward = delta_conf
+        # Linear or sigmoid delta scoring
+        reward = delta_conf
 
-            # Optional: confidence-weighted bonus for new detections
-            num_new = max(0, len(adjusted_detections) - len(original_detections))
-            if num_new > 0:
-                bonus = sum(det['confidence'] for det in adjusted_detections[-num_new:]) * 0.1
-                reward += bonus
+        # Optional: confidence-weighted bonus for new detections
+        if len(adjusted_detections) > len(original_detections):
+            reward += 1 
 
-                
         # Optionally apply log-ratio (if you still like it)
         reward = np.log((adjusted_conf + 1e-3) / (original_conf + 1e-3))
 
@@ -90,9 +84,6 @@ class ImagePreprocessingQEnv:
         reward = np.clip(reward, -1.0, 1.0)
 
         if self.render:
-            # print(f"Original Confidence: {original_conf:.2f}, Adjusted Confidence: {adjusted_conf:.2f}, "
-            #     f"Delta Confidence: {delta_conf:.2f}, Raw Reward: {unclipped_reward:.4f}, Clipped: {reward:.4f}")
-
             display_img = self.detector.draw_detections(self.image, adjusted_detections)
             cv2.imshow("Adjusted Image", display_img)
 
@@ -166,7 +157,7 @@ class ImagePreprocessingQEnv:
         # plt.show()
 
         if save: 
-            with open("output/Q/avg_rewards.txt", "w") as f:
+            with open(f"output/{model_type}/avg_rewards.txt", "w") as f:
                 for reward in avg_rewards:
                     f.write(f"{reward}\n")
         plt.close()
@@ -193,7 +184,7 @@ class ImagePreprocessingQEnv:
             plt.savefig(f"output/{model_type}/avg_differences_plot.png")
 
             # Save differences to a text file
-            with open("output/Q/avg_differences.txt", "w") as f:
+            with open(f"output/{model_type}/avg_differences.txt", "w") as f:
                 for diff in avg_differences:
                     f.write(f"{diff}\n")
 
@@ -222,7 +213,7 @@ class ImagePreprocessingQEnv:
             plt.savefig(f"output/{model_type}/avg_successful_detections_plot.png")
 
             # Save successful detections to a text file
-            with open("output/Q/successful_detections.txt", "w") as f:
+            with open(f"output/{model_type}/successful_detections.txt", "w") as f:
                 for detection in avg_successful_detections:
                     f.write(f"{detection}\n")
         
