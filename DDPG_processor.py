@@ -22,8 +22,13 @@ from collections import deque
 # then explore gamma correction, histogram equalization, CLAHE, etc. 
 # try CNN based input for RL 
 
+# save the best model 
+# try again for confidence increasing reward for larger data set 
+# metric idea - %mulitple detections out of total images / steps 
+# should identify any images that never get detected, and then we can look at those images to see if they are problematic
+
 class Actor(nn.Module):
-    def __init__(self, input_dim, output_dim):
+    def __init__(self, input_dim, output_dim): 
         super(Actor, self).__init__()
         self.fc1 = nn.Linear(input_dim, 32)
         self.fc2 = nn.Linear(32, 64)
@@ -78,7 +83,7 @@ if __name__ == "__main__":
     batch_size = 32
     memory_capacity = 100000
     num_episodes = 5000
-    num_experiments = 5
+    num_experiments = 25
     num_steps = 1
     action_noise_std = 0.1
     initial_noise_std = 0.1
