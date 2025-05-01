@@ -77,8 +77,8 @@ if __name__ == "__main__":
     critic_lr = 1e-3
     batch_size = 32
     memory_capacity = 100000
-    num_episodes = 5000
-    num_experiments = 5
+    num_episodes = 20000
+    num_experiments = 20
     num_steps = 1
     action_noise_std = 0.1
     initial_noise_std = 0.1
