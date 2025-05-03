@@ -418,5 +418,6 @@ if __name__ == "__main__":
     print("Models saved.")
 
 
-    
+    run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=10)
+    print("Evaluation finished. Check output/DDPG/detections_plot.png for the results.")
 
