@@ -10,6 +10,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from collections import deque
+import shutil
 
 # TODO:
 # look at reward function
@@ -75,16 +76,157 @@ class ImagePreprocessingDQNEnv(ImagePreprocessingQEnv):
         return np.array([brightness, contrast])
 
 
+# load model and set to eval mode
+def load_model(actor_path, critic_path):
+    actor = Actor(input_dim=2, output_dim=2)
+    critic = Critic(input_dim=2, action_dim=2)
+    actor.load_state_dict(torch.load(actor_path))
+    critic.load_state_dict(torch.load(critic_path))
+    actor.eval()
+    critic.eval()
+   
+    return actor, critic
+
+def evaluate_model(actor, critic, env, num_episodes, num_steps=1):
+    total_rewards = []
+    total_detections = []
+    total_differences = []
+
+    for episode in range(num_episodes):
+        env.reset()
+        state = env.get_state_vector()
+        total_reward = 0
+        done = False
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        actor.to(device)
+        critic.to(device)
+
+        for step in range(num_steps):
+            state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
+            action = actor(state_tensor).cpu().data.numpy().flatten()
+            action += np.random.normal(0, 0.05, size=2)  # small noise for exploration
+            action = np.clip(action, -1.0, 1.0)
+
+            beta = action[0] * 100  # scale to [0, 100]
+            alpha = action[1] * 0.3 + 1.5  # scale back to [0.5, 1.5]
+            env.current_beta = beta
+            env.current_alpha = alpha
+            env.image = env.apply_adjustments(env.original_image, beta, alpha)
+
+            original_detections = env.detector.detect_objects(env.detector.preprocess_image_array(env.original_image))
+            adjusted_detections = env.detector.detect_objects(env.detector.preprocess_image_array(env.image))
+            reward = env.get_reward(original_detections, adjusted_detections)
+
+            next_state = env.get_state_vector()
+            state = next_state
+            total_reward += reward
+
+            print(f"Episode {episode+1}, Step {step+1}, State: {state}, Action: [{beta:.2f}, {alpha:.2f}], Reward: {reward:.2f}, Total Reward: {total_reward:.2f}")
+            if len(adjusted_detections) > len(original_detections):
+                break
+            else:
+                print("No new detections, continuing...")
+        
+        total_detections.append(len(adjusted_detections) )
+        total_differences.append(len(adjusted_detections) - len(original_detections))
+
+        total_rewards.append(total_reward)
+        print(f"Episode {episode+1}/{num_episodes}, Total Reward: {total_reward:.2f}")
+
+    return total_detections, total_differences
+
+def run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=1):
+
+    actor, critic = load_model(actor_path, critic_path)
+
+    model_path = "models/YOLO_eye_detector.pt"
+    image_folder = "images/test"
+
+    detector = ObjectDetectorCNN(model_path)
+    env = ImagePreprocessingDQNEnv(detector, image_folder, render=False)
+    # get count of images in the folder
+    num_images = len([f for f in os.listdir(image_folder) if f.endswith('.jpg') or f.endswith('.png')])
+    print(f"Evaluating on {num_images} images.")
+
+    detections, differences = evaluate_model(actor, critic, env, num_episodes=num_images, num_steps=num_steps)
+
+    # plot detections
+    plt.figure(figsize=(10, 5))
+    plt.plot(detections, label='Detections')
+    plt.xlabel('Episode')
+    plt.ylabel('Number of Detections')
+    plt.title('Detections Over Episodes')
+    plt.legend()
+    plt.savefig("output/DDPG/eval_detections_plot.png")
+
+    # plot differences
+    plt.figure(figsize=(10, 5))
+    plt.plot(differences, label='Differences', color='orange')
+    plt.xlabel('Episode')
+    plt.ylabel('Difference in Detections')
+    plt.title('Differences in Detections Over Episodes')
+    plt.legend()
+    plt.savefig("output/DDPG/eval_differences_plot.png")
+
+    output_dir = Path("output/DDPG")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    results_file = output_dir / "eval_results.txt"
+
+    with open(results_file, "w") as f:
+        def write_and_print(s):
+            print(s)
+            f.write(s + "\n")
+
+        # Detections
+        avg_detections = np.mean(detections)
+        zero_detections = len([d for d in detections if d == 0])
+        percent_zero_detections = zero_detections / len(detections) * 100
+        one_detection = len([d for d in detections if d == 1])
+        percent_one_detection = one_detection / len(detections) * 100
+        two_detections = len([d for d in detections if d == 2])
+        percent_two_detections = two_detections / len(detections) * 100
+        three_detections = len([d for d in detections if d == 3])
+        percent_three_detections = three_detections / len(detections) * 100
+
+        write_and_print(f"Average Detections: {avg_detections:.2f}")
+        write_and_print(f"Zero Detections: {zero_detections} ({percent_zero_detections:.2f}%)")
+        write_and_print(f"One Detection: {one_detection} ({percent_one_detection:.2f}%)")
+        write_and_print(f"Two Detections: {two_detections} ({percent_two_detections:.2f}%)")
+        write_and_print(f"Three Detections: {three_detections} ({percent_three_detections:.2f}%)")
+
+        # Differences
+        avg_differences = np.mean(differences)
+        zero_differences = len([d for d in differences if d == 0])
+        percent_zero_differences = zero_differences / len(differences) * 100
+        one_difference = len([d for d in differences if d == 1])
+        percent_one_difference = one_difference / len(differences) * 100
+        two_differences = len([d for d in differences if d == 2])
+        percent_two_differences = two_differences / len(differences) * 100
+
+        write_and_print(f"\nAverage Differences: {avg_differences:.2f}")
+        write_and_print(f"Zero Differences: {zero_differences} ({percent_zero_differences:.2f}%)")
+        write_and_print(f"One Difference: {one_difference} ({percent_one_difference:.2f}%)")
+        write_and_print(f"Two Differences: {two_differences} ({percent_two_differences:.2f}%)")
+
+    print("Evaluation complete.")
+
+
+
 if __name__ == "__main__":
+
+    # Load the trained model and run evaluation
+    # run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=10)
+    # print("Evaluation finished. Check output/DDPG/detections_plot.png for the results.")
+
     gamma = 1.0
     tau = 0.005
     actor_lr = 1e-3
     critic_lr = 1e-3
     batch_size = 32
     memory_capacity = 100000
-    num_episodes = 5000
-    num_experiments = 25
-    num_steps = 1
+    num_episodes = 10000
+    num_experiments = 1
+    num_steps = 100
     action_noise_std = 0.1
     initial_noise_std = 0.1
     final_noise_std = 0.05
@@ -103,8 +245,40 @@ if __name__ == "__main__":
     for i in range(num_experiments):
         model_path = "models/YOLO_eye_detector.pt"
         image_folder = "images/pupils_xor_iris"
+
+         # Get and shuffle all image files
+        all_images = [f for f in os.listdir(image_folder) if f.endswith('.jpg') or f.endswith('.png')]
+        random.shuffle(all_images)
+
+        # Prepare training images
+        num_train_images = int(0.8 * len(all_images))
+        train_images = all_images[:num_train_images]
+        train_images_folder = Path("images/train")
+        if train_images_folder.exists():
+            shutil.rmtree(train_images_folder)
+        os.makedirs(train_images_folder)
+        for img in train_images:
+            src = Path(image_folder) / img
+            dst = train_images_folder / img
+            shutil.copy(src, dst)
+        print(f"Using {len(train_images)} images for training.")
+
+        # Prepare test images
+        test_images = all_images[num_train_images:]
+        test_images_folder = Path("images/test")
+        if test_images_folder.exists():
+            shutil.rmtree(test_images_folder)
+        os.makedirs(test_images_folder)
+        for img in test_images:
+            src = Path(image_folder) / img
+            dst = test_images_folder / img
+            shutil.copy(src, dst)
+        print(f"Using {len(test_images)} images for testing.")
+        print(f"Experiment {i+1}/{num_experiments} with {len(train_images)} training images and {len(test_images)} test images.")
+
+
         detector = ObjectDetectorCNN(model_path)
-        env = ImagePreprocessingDQNEnv(detector, image_folder, render=False)
+        env = ImagePreprocessingDQNEnv(detector, train_images_folder, render=False)
 
         actor = Actor(input_dim=2, output_dim=2).to(device)
         target_actor = Actor(input_dim=2, output_dim=2).to(device)
@@ -160,7 +334,6 @@ if __name__ == "__main__":
 
                 # print(f"Episode {episode+1}, Step {step+1}, State: {state}, Action: [{beta:.2f}, {alpha:.2f}], Reward: {reward:.2f}, Total Reward: {total_reward:.2f}")
 
-                # print(f"Episode {episode+1}, State: {state}, Action: [{beta:.2f}, {alpha:.2f}], Reward: {reward:.2f}, Total Reward: {total_reward:.2f}")
 
                 if len(replay_buffer) > batch_size:
                     states, actions, rewards_batch, next_states, dones = replay_buffer.sample(batch_size)
@@ -243,3 +416,7 @@ if __name__ == "__main__":
     torch.save(actor.state_dict(), "models/DDPG_actor.pth")
     torch.save(critic.state_dict(), "models/DDPG_critic.pth")
     print("Models saved.")
+
+
+    
+
