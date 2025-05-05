@@ -63,8 +63,8 @@ class ImagePreprocessingQEnv:
 
     def get_reward(self, original_detections, adjusted_detections):
         # Sum confidences for non-eye classes
-        original_conf = sum(det['confidence'] for det in original_detections if det['class_name'] != 'Eye')
-        adjusted_conf = sum(det['confidence'] for det in adjusted_detections if det['class_name'] != 'Eye')
+        original_conf = sum(det['confidence'] for det in original_detections) # if det['class_name']!= 'Eye')
+        adjusted_conf = sum(det['confidence'] for det in adjusted_detections) # if det['class_name'] != 'Eye')
         delta_conf = adjusted_conf - original_conf
 
         # Adjust detections based on confidence threshold

@@ -27,7 +27,8 @@ import shutil
 # try again for confidence increasing reward for larger data set 
 # metric idea - %mulitple detections out of total images / steps 
 # should identify any images that never get detected, and then we can look at those images to see if they are problematic
-
+# need to scrub bad images from the dataset, or add more data augmentation to make them more robust
+# TODO: add IoU check for pupil in eye.Becomes more relevant with evaluation, but should be incorporated into reward function
 class Actor(nn.Module):
     def __init__(self, input_dim, output_dim): 
         super(Actor, self).__init__()
@@ -91,6 +92,7 @@ def evaluate_model(actor, critic, env, num_episodes, num_steps=1):
     total_rewards = []
     total_detections = []
     total_differences = []
+    total_steps = []
 
     for episode in range(num_episodes):
         env.reset()
@@ -124,31 +126,27 @@ def evaluate_model(actor, critic, env, num_episodes, num_steps=1):
             print(f"Episode {episode+1}, Step {step+1}, State: {state}, Action: [{beta:.2f}, {alpha:.2f}], Reward: {reward:.2f}, Total Reward: {total_reward:.2f}")
             if len(adjusted_detections) > len(original_detections):
                 break
-            else:
-                print("No new detections, continuing...")
+
         
         total_detections.append(len(adjusted_detections) )
         total_differences.append(len(adjusted_detections) - len(original_detections))
-
+        total_steps.append(step + 1)
         total_rewards.append(total_reward)
         print(f"Episode {episode+1}/{num_episodes}, Total Reward: {total_reward:.2f}")
 
-    return total_detections, total_differences
+    return total_detections, total_differences, total_steps
 
-def run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=1):
+def run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=1, render=False, model_path="models/YOLO_eye_detector_best.pt", image_folder="images/test"):
 
     actor, critic = load_model(actor_path, critic_path)
 
-    model_path = "models/YOLO_eye_detector.pt"
-    image_folder = "images/test"
-
     detector = ObjectDetectorCNN(model_path)
-    env = ImagePreprocessingDQNEnv(detector, image_folder, render=False)
+    env = ImagePreprocessingDQNEnv(detector, image_folder, render=render)
     # get count of images in the folder
     num_images = len([f for f in os.listdir(image_folder) if f.endswith('.jpg') or f.endswith('.png')])
     print(f"Evaluating on {num_images} images.")
 
-    detections, differences = evaluate_model(actor, critic, env, num_episodes=num_images, num_steps=num_steps)
+    detections, differences, steps = evaluate_model(actor, critic, env, num_episodes=num_images, num_steps=num_steps)
 
     # plot detections
     plt.figure(figsize=(10, 5))
@@ -168,15 +166,25 @@ def run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_
     plt.legend()
     plt.savefig("output/DDPG/eval_differences_plot.png")
 
+    # plot steps
+    plt.figure(figsize=(10, 5))
+    plt.plot(steps, label='Steps', color='green')
+    plt.xlabel('Episode')
+    plt.ylabel('Steps Taken')
+    plt.title('Steps Taken Over Episodes')
+    plt.legend()
+    plt.savefig("output/DDPG/eval_steps_plot.png")
+
     output_dir = Path("output/DDPG")
     output_dir.mkdir(parents=True, exist_ok=True)
     results_file = output_dir / "eval_results.txt"
 
-    with open(results_file, "w") as f:
+    with open(results_file, "a") as f:
         def write_and_print(s):
             print(s)
             f.write(s + "\n")
-
+        
+        write_and_print(f"\n\nEvaluation Results for {num_images} Episodes and {num_steps} Steps:")
         # Detections
         avg_detections = np.mean(detections)
         zero_detections = len([d for d in detections if d == 0])
@@ -208,14 +216,58 @@ def run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_
         write_and_print(f"One Difference: {one_difference} ({percent_one_difference:.2f}%)")
         write_and_print(f"Two Differences: {two_differences} ({percent_two_differences:.2f}%)")
 
+        # Steps 
+        avg_steps = np.mean(steps)
+        one_steps  = len([s for s in steps if s == 1])
+        percent_one_steps = one_steps / len(steps) * 100
+        max_steps = len([s for s in steps if s == num_steps])
+        percent_max_steps = max_steps / len(steps) * 100
+        write_and_print(f"\nAverage Steps: {avg_steps:.2f}")
+        write_and_print(f"One Step: {one_steps} ({percent_one_steps:.2f}%)")
+        write_and_print(f"Max Steps: {max_steps} ({percent_max_steps:.2f}%)")
+
+
     print("Evaluation complete.")
 
+def split_dataset(): 
+    image_folder = "images/pupils_xor_iris"
+
+        # Get and shuffle all image files
+    all_images = [f for f in os.listdir(image_folder) if f.endswith('.jpg') or f.endswith('.png')]
+    random.shuffle(all_images)
+
+    # Prepare training images
+    num_train_images = int(0.8 * len(all_images))
+    train_images = all_images[:num_train_images]
+    train_images_folder = Path("images/train_shuffle")
+    if train_images_folder.exists():
+        shutil.rmtree(train_images_folder)
+    os.makedirs(train_images_folder)
+    for img in train_images:
+        src = Path(image_folder) / img
+        dst = train_images_folder / img
+        shutil.copy(src, dst)
+    print(f"Using {len(train_images)} images for training.")
+
+    # Prepare test images
+    test_images = all_images[num_train_images:]
+    test_images_folder = Path("images/test_shuffle")
+    if test_images_folder.exists():
+        shutil.rmtree(test_images_folder)
+    os.makedirs(test_images_folder)
+    for img in test_images:
+        src = Path(image_folder) / img
+        dst = test_images_folder / img
+        shutil.copy(src, dst)
+    print(f"Using {len(test_images)} images for testing.")
+
+    return train_images_folder, test_images_folder
 
 
 if __name__ == "__main__":
 
     # Load the trained model and run evaluation
-    # run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=10)
+    # run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=10, render=False)
     # print("Evaluation finished. Check output/DDPG/detections_plot.png for the results.")
 
     gamma = 1.0
@@ -224,9 +276,9 @@ if __name__ == "__main__":
     critic_lr = 1e-3
     batch_size = 32
     memory_capacity = 100000
-    num_episodes = 10000
+    num_episodes = 5000
     num_experiments = 1
-    num_steps = 100
+    num_steps = 10
     action_noise_std = 0.1
     initial_noise_std = 0.1
     final_noise_std = 0.05
@@ -243,42 +295,12 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     for i in range(num_experiments):
-        model_path = "models/YOLO_eye_detector.pt"
-        image_folder = "images/pupils_xor_iris"
-
-         # Get and shuffle all image files
-        all_images = [f for f in os.listdir(image_folder) if f.endswith('.jpg') or f.endswith('.png')]
-        random.shuffle(all_images)
-
-        # Prepare training images
-        num_train_images = int(0.8 * len(all_images))
-        train_images = all_images[:num_train_images]
-        train_images_folder = Path("images/train")
-        if train_images_folder.exists():
-            shutil.rmtree(train_images_folder)
-        os.makedirs(train_images_folder)
-        for img in train_images:
-            src = Path(image_folder) / img
-            dst = train_images_folder / img
-            shutil.copy(src, dst)
-        print(f"Using {len(train_images)} images for training.")
-
-        # Prepare test images
-        test_images = all_images[num_train_images:]
-        test_images_folder = Path("images/test")
-        if test_images_folder.exists():
-            shutil.rmtree(test_images_folder)
-        os.makedirs(test_images_folder)
-        for img in test_images:
-            src = Path(image_folder) / img
-            dst = test_images_folder / img
-            shutil.copy(src, dst)
-        print(f"Using {len(test_images)} images for testing.")
-        print(f"Experiment {i+1}/{num_experiments} with {len(train_images)} training images and {len(test_images)} test images.")
-
+        model_path = "models/YOLO_eye_detector_best.pt"
+        train_images_folder, test_images_folder = Path("images/insight/train"), Path("images/insight/test")
+        # split_dataset()
 
         detector = ObjectDetectorCNN(model_path)
-        env = ImagePreprocessingDQNEnv(detector, train_images_folder, render=False)
+        env = ImagePreprocessingDQNEnv(detector, train_images_folder, render=True)
 
         actor = Actor(input_dim=2, output_dim=2).to(device)
         target_actor = Actor(input_dim=2, output_dim=2).to(device)
@@ -418,6 +440,6 @@ if __name__ == "__main__":
     print("Models saved.")
 
 
-    run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=10)
+    run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=10, model_path="models/YOLO_eye_detector_best.pt", image_folder="images/test2")
     print("Evaluation finished. Check output/DDPG/detections_plot.png for the results.")
 

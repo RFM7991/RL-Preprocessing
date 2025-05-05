@@ -1,0 +1,106 @@
+Evaluation Results for 176 Episodes and 1 Steps:
+Average Detections: 2.44
+Zero Detections: 2 (1.14%)
+One Detection: 16 (9.09%)
+Two Detections: 60 (34.09%)
+Three Detections: 98 (55.68%)
+
+Average Differences: 0.48
+Zero Differences: 68 (38.64%)
+One Difference: 94 (53.41%)
+Two Differences: 2 (1.14%)
+
+Average Steps: 1.00
+One Step: 176 (100.00%)
+Max Steps: 176 (100.00%)
+
+
+
+Evaluation Results for 176 Episodes and 5 Steps:
+Average Detections: 2.61
+Zero Detections: 4 (2.27%)
+One Detection: 7 (3.98%)
+Two Detections: 43 (24.43%)
+Three Detections: 122 (69.32%)
+
+Average Differences: 0.65
+Zero Differences: 43 (24.43%)
+One Difference: 126 (71.59%)
+Two Differences: 0 (0.00%)
+
+Average Steps: 2.40
+One Step: 94 (53.41%)
+Max Steps: 50 (28.41%)
+
+
+
+Evaluation Results for 176 Episodes and 10 Steps:
+Average Detections: 2.71
+Zero Detections: 0 (0.00%)
+One Detection: 4 (2.27%)
+Two Detections: 43 (24.43%)
+Three Detections: 129 (73.30%)
+
+Average Differences: 0.78
+Zero Differences: 44 (25.00%)
+One Difference: 124 (70.45%)
+Two Differences: 7 (3.98%)
+
+Average Steps: 3.80
+One Step: 99 (56.25%)
+Max Steps: 45 (25.57%)
+
+
+
+Evaluation Results for 176 Episodes and 15 Steps:
+Average Detections: 2.70
+Zero Detections: 4 (2.27%)
+One Detection: 7 (3.98%)
+Two Detections: 27 (15.34%)
+Three Detections: 138 (78.41%)
+
+Average Differences: 0.76
+Zero Differences: 26 (14.77%)
+One Difference: 138 (78.41%)
+Two Differences: 3 (1.70%)
+
+Average Steps: 4.43
+One Step: 106 (60.23%)
+Max Steps: 36 (20.45%)
+
+Total Episodes: 176
+
+
+# BLACK BOX REWARDS 
+Evaluation Results for 176 Episodes and 10 Steps:
+Average Detections: 2.52
+Zero Detections: 1 (0.57%)
+One Detection: 11 (6.25%)
+Two Detections: 60 (34.09%)
+Three Detections: 104 (59.09%)
+
+Average Differences: 0.59
+Zero Differences: 60 (34.09%)
+One Difference: 106 (60.23%)
+Two Differences: 3 (1.70%)
+
+Average Steps: 5.35
+One Step: 44 (25.00%)
+Max Steps: 68 (38.64%)
+
+
+Evaluation Results for 176 Episodes and 10 Steps:
+Average Detections: 2.68
+Zero Detections: 0 (0.00%)
+One Detection: 5 (2.84%)
+Two Detections: 47 (26.70%)
+Three Detections: 124 (70.45%)
+
+Average Differences: 0.72
+Zero Differences: 48 (27.27%)
+One Difference: 127 (72.16%)
+Two Differences: 0 (0.00%)
+
+Average Steps: 4.01
+One Step: 92 (52.27%)
+Max Steps: 50 (28.41%)
