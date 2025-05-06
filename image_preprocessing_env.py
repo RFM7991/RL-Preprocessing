@@ -7,10 +7,12 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 class ImagePreprocessingQEnv:
-    def __init__(self, detector, image_folder, render=False, num_bins=20, seed=21):
-        # np.random.seed(seed)
-        # random.seed(seed)
-            
+    def __init__(self, detector, image_folder, render=False, seed=None):
+        # Set random seed if provided
+        if seed is not None:
+            np.random.seed(seed)
+            random.seed(seed)
+
         self.detector = detector
         self.image_folder = Path(__file__).resolve().parent / image_folder
         self.image_paths = [os.path.join(self.image_folder, f) for f in os.listdir(self.image_folder) if f.endswith(('.jpg', '.png'))]
@@ -20,23 +22,20 @@ class ImagePreprocessingQEnv:
         self.current_image_index = 0
         self.original_image = None
         self.image = None
+        self.image_path = None
         self.render = render
-        self.num_bins = num_bins
 
-        # Direct value-based brightness and contrast levels
-        self.beta_values = np.linspace(-100, 100, num_bins)
-        self.alpha_values = np.linspace(0.5, 2.0, num_bins)
-        self.action_space = [(b, a) for b in self.beta_values for a in self.alpha_values]
-        self.state = (self.num_bins // 2, self.num_bins // 2)  # start from middle
-
+        # Current image transform values (scaled by agent)
         self.current_beta = 0.0
         self.current_alpha = 1.0
+
+        # Logging and tracking variables
         self.all_rewards = []
         self.all_differences = []
         self.successful_detections = []
         self.epoch_counter = 0
         self.p_counter = 0
-        self.image_path = None
+
 
     def compute_image_stats(self, img):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -63,11 +62,11 @@ class ImagePreprocessingQEnv:
         self.current_beta = brightness * 100
         self.current_alpha = 1 + contrast * 0.5
 
-        beta_bin = np.argmin(np.abs(self.beta_values - self.current_beta))
-        alpha_bin = np.argmin(np.abs(self.alpha_values - self.current_alpha))
-        self.state = (beta_bin, alpha_bin)
+        self.state = np.array([brightness, contrast])  # continuous state
+
         self.image_path = image_path
         return self.state
+
 
     def get_reward(self, original_detections, adjusted_detections):
         # Sum confidences for non-eye classes

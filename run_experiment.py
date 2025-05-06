@@ -69,34 +69,35 @@ def evaluate_model(actor, critic, env, num_episodes, num_steps=1):
         env.reset(shuffle=False)
         state = env.get_state_vector() 
         total_reward = 0
-        done = False
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         actor.to(device)
         critic.to(device)
 
         for step in range(num_steps):
-            state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
             action = select_action(actor, state, noise_std=0.05, device=device)
-
-            beta = action[0] * 100  # scale to [0, 100]
-            alpha = action[1] * 0.3 + 1.5  # scale back to [0.5, 1.5]
+            beta = action[0] * 100
+            alpha = action[1] * 0.3 + 1.5
             action_input = np.array([action[0], action[1]])
-            next_state, reward, done, original_detections, adjusted_detections = env.step(action_input)
 
-            if done:
-                total_reward += reward
-                break
-            
+            next_state, reward, done, original_detections, adjusted_detections = env.step(action_input)
+            total_reward += reward
+            state = next_state
 
             print(f"Episode {episode+1}, Step {step+1}, State: {next_state}, Action: [{beta:.2f}, {alpha:.2f}], Reward: {reward:.2f}, Total Reward: {total_reward:.2f}")
 
-        total_detections.append(len(adjusted_detections) )
+            if done:
+                break
+
+        # Log after episode ends (whether via done or max steps)
+        total_detections.append(len(adjusted_detections))
         total_differences.append(len(adjusted_detections) - len(original_detections))
         total_steps.append(step + 1)
         total_rewards.append(total_reward)
+
         print(f"Episode {episode+1}/{num_episodes}, Total Reward: {total_reward:.2f}")
 
-    return total_detections, total_differences, total_steps
+    return total_detections, total_differences, total_steps, total_rewards
+
 
 def run_evaluation(actor_path="models/DDPG_actor.pth",
                    critic_path="models/DDPG_critic.pth",
@@ -112,7 +113,7 @@ def run_evaluation(actor_path="models/DDPG_actor.pth",
     num_images = len([f for f in os.listdir(image_folder) if f.endswith(('.jpg', '.png'))])
     print(f"Evaluating on {num_images} images...")
 
-    detections, differences, steps = evaluate_model(actor, critic, env, num_episodes=num_images, num_steps=num_steps)
+    detections, differences, steps, rewards  = evaluate_model(actor, critic, env, num_episodes=num_images, num_steps=num_steps)
 
     plot_and_save_results(detections, differences, steps, num_images, num_steps)
     print("Evaluation complete.")
@@ -120,9 +121,9 @@ def run_evaluation(actor_path="models/DDPG_actor.pth",
 
 if __name__ == "__main__":
 
-    # # Load the trained model and run evaluation
-    # run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=10, render=True, model_path="models/YOLO_eye_detector.pt", image_folder="images/test")
-    print("Evaluation finished. Check output/DDPG/detections_plot.png for the results.")
+    # Load the trained model and run evaluation
+    run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=5, render=False, model_path="models/YOLO_eye_detector.pt", image_folder="images/test")
+    print("Evaluation finished. Check output/DDPG/detections_plot.png for the results.")  
 
     gamma = 1.0
     tau = 0.005
@@ -130,8 +131,8 @@ if __name__ == "__main__":
     critic_lr = 1e-3
     batch_size = 32
     memory_capacity = 100000
-    num_episodes = 1000
-    num_experiments = 20
+    num_episodes = 5000
+    num_experiments = 1
     action_noise_std = 0.1
     initial_noise_std = 0.1
     final_noise_std = 0.05
@@ -147,7 +148,7 @@ if __name__ == "__main__":
     # if torch.cuda.is_available():
     #     torch.cuda.manual_seed_all(21)
 
-    step_grid = [1, 5, 10]
+    step_grid = [5]
     results_dict = {}
 
     for num_steps in step_grid:
@@ -167,7 +168,7 @@ if __name__ == "__main__":
             # split_dataset() get a new split saved as train_shuffle and test_shuffle
 
             detector = ObjectDetectorCNN(model_path)
-            env = ImagePreprocessingQEnv(detector, train_images_folder, render=False)
+            env = ImagePreprocessingQEnv(detector, train_images_folder, render=True)
 
             actor = Actor(input_dim=2, output_dim=2).to(device)
             target_actor = Actor(input_dim=2, output_dim=2).to(device)
@@ -211,9 +212,9 @@ if __name__ == "__main__":
 
                     replay_buffer.push(state, action, reward, next_state, done)
                     state = next_state
-                    
-                    if done or step == num_steps - 1:
-                        per_episode_reward = reward
+                    per_episode_reward += reward
+
+                    if done or step == num_steps - 1:    
                         per_episode_detections = len(adjusted_detections)
                         per_episode_differences = len(adjusted_detections) - len(original_detections)
 
