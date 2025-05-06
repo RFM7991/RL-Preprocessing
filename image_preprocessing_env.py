@@ -148,7 +148,7 @@ class ImagePreprocessingQEnv:
 
     def get_state_vector(self):
         brightness, contrast = self.compute_image_stats(self.image)
-        return np.array([brightness, contrast])
+        return np.array([brightness, contrast]) 
 
     def plot_rewards(self, save=True, rewards=[], model_type="Q"):
         plt.figure(figsize=(20, 10))

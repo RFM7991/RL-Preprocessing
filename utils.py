@@ -23,37 +23,18 @@ def load_model(actor_path, critic_path):
     critic.eval()
    
     return actor, critic
-
 def plot_and_save_results(detections, differences, steps, num_images, num_steps, output_dir="output/DDPG"):
-    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    output_dir = Path(output_dir) / str(num_steps)
+    plots_dir = output_dir / "plots"
+    results_dir = output_dir / "results"
+    plots_dir.mkdir(parents=True, exist_ok=True)
+    results_dir.mkdir(parents=True, exist_ok=True)
 
-    # Plotting
-    plt.figure(figsize=(10, 5))
-    plt.plot(detections, label='Detections')
-    plt.xlabel('Episode')
-    plt.ylabel('Number of Detections')
-    plt.title('Detections Over Episodes')
-    plt.legend()
-    plt.savefig(f"{output_dir}/plots/eval_detections_plot.png")
-
-    plt.figure(figsize=(10, 5))
-    plt.plot(differences, label='Differences', color='orange')
-    plt.xlabel('Episode')
-    plt.ylabel('Difference in Detections')
-    plt.title('Differences in Detections Over Episodes')
-    plt.legend()
-    plt.savefig(f"{output_dir}/plots/eval_differences_plot.png")
-
-    plt.figure(figsize=(10, 5))
-    plt.plot(steps, label='Steps', color='green')
-    plt.xlabel('Episode')
-    plt.ylabel('Steps Taken')
-    plt.title('Steps Taken Over Episodes')
-    plt.legend()
-    plt.savefig(f"{output_dir}/plots/eval_steps_plot.png")
+    # Combined plot
+    plot_combined_distributions(detections, differences, steps, num_steps, plots_dir)
 
     # Reporting
-    results_file = Path(output_dir) / "results/eval_results.txt"
+    results_file = results_dir / "eval_results.txt"
     with open(results_file, "a") as f:
         def write_and_print(s):
             print(s)
@@ -61,24 +42,55 @@ def plot_and_save_results(detections, differences, steps, num_images, num_steps,
 
         write_and_print(f"\n\nEvaluation Results for {num_images} Episodes and {num_steps} Steps:")
 
-        # Detections stats
         write_and_print(f"Average Detections: {np.mean(detections):.2f}")
         for val in range(4):
             count = sum(1 for d in detections if d == val)
             write_and_print(f"{val} Detections: {count} ({count / len(detections) * 100:.2f}%)")
 
-        # Differences stats
         write_and_print(f"\nAverage Differences: {np.mean(differences):.2f}")
         for val in range(3):
             count = sum(1 for d in differences if d == val)
             write_and_print(f"{val} Differences: {count} ({count / len(differences) * 100:.2f}%)")
 
-        # Steps stats
         write_and_print(f"\nAverage Steps: {np.mean(steps):.2f}")
-        count_one = sum(1 for s in steps if s == 1)
-        count_max = sum(1 for s in steps if s == num_steps)
-        write_and_print(f"One Step: {count_one} ({count_one / len(steps) * 100:.2f}%)")
-        write_and_print(f"Max Steps: {count_max} ({count_max / len(steps) * 100:.2f}%)")
+        for val in range(1, num_steps + 1):
+            count = sum(1 for s in steps if s == val)
+            write_and_print(f"{val} Steps: {count} ({count / len(steps) * 100:.2f}%)")
+
+
+def plot_combined_distributions(detections, differences, steps, num_steps, plots_dir):
+    fig, axs = plt.subplots(1, 3, figsize=(20, 5))
+
+    fig.suptitle(f"Evaluation Metrics Distributions for RL Agent Trained for {num_steps} Step Sizes", fontsize=16)
+
+    # Normalize hist heights to percentages
+    weights_d = np.ones_like(detections) / len(detections)
+    weights_df = np.ones_like(differences) / len(differences)
+    weights_s = np.ones_like(steps) / len(steps)
+
+    # Detections
+    axs[0].hist(detections, bins=range(0, max(detections) + 2), align='left', color='blue', edgecolor='black', weights=weights_d)
+    axs[0].set_title("Detections")
+    axs[0].set_xlabel("Number of Detections")
+    axs[0].set_ylabel("Percentage")
+    axs[0].yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{y*100:.0f}%'))
+
+    # Differences
+    axs[1].hist(differences, bins=range(min(differences), max(differences) + 2), align='left', color='orange', edgecolor='black', weights=weights_df)
+    axs[1].set_title("Confidence Differences")
+    axs[1].set_xlabel("Difference in Detections")
+    axs[1].yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{y*100:.0f}%'))
+
+    # Steps
+    axs[2].hist(steps, bins=range(1, num_steps + 2), align='left', color='mediumseagreen', edgecolor='green', weights=weights_s)
+    axs[2].set_title("Steps Taken")
+    axs[2].set_xlabel("Steps")
+    axs[2].yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{y*100:.0f}%'))
+
+    plt.tight_layout()
+    plt.savefig(plots_dir / "combined_distribution.png")
+    plt.close()
+
 
 
 def split_dataset(): 
@@ -149,3 +161,4 @@ def print_results_dict(results_dict):
         dets = np.array(results_dict[step]["successful_detections"]).mean(axis=0)
 
         print(f"Step {step} | Avg Reward: {rewards.mean():.2f} | Avg Δ: {diffs.mean():.2f} | Avg Detections: {dets.mean():.2f}")
+

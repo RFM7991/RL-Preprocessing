@@ -1,0 +1,100 @@
+
+
+Evaluation Results for 172 Episodes and 5 Steps:
+Average Detections: 2.63
+0 Detections: 0 (0.00%)
+1 Detections: 11 (6.40%)
+2 Detections: 41 (23.84%)
+3 Detections: 120 (69.77%)
+
+Average Differences: 0.72
+0 Differences: 36 (20.93%)
+1 Differences: 128 (74.42%)
+2 Differences: 1 (0.58%)
+
+Average Steps: 2.30
+1 Steps: 72 (41.86%)
+2 Steps: 44 (25.58%)
+3 Steps: 18 (10.47%)
+4 Steps: 9 (5.23%)
+5 Steps: 29 (16.86%)
+
+
+Evaluation Results for 172 Episodes and 5 Steps:
+Average Detections: 2.65
+0 Detections: 0 (0.00%)
+1 Detections: 13 (7.56%)
+2 Detections: 34 (19.77%)
+3 Detections: 125 (72.67%)
+
+Average Differences: 0.73
+0 Differences: 32 (18.60%)
+1 Differences: 127 (73.84%)
+2 Differences: 4 (2.33%)
+
+Average Steps: 2.20
+1 Steps: 77 (44.77%)
+2 Steps: 44 (25.58%)
+3 Steps: 15 (8.72%)
+4 Steps: 12 (6.98%)
+5 Steps: 24 (13.95%)
+
+
+Evaluation Results for 172 Episodes and 5 Steps:
+Average Detections: 2.62
+0 Detections: 0 (0.00%)
+1 Detections: 14 (8.14%)
+2 Detections: 37 (21.51%)
+3 Detections: 121 (70.35%)
+
+Average Differences: 0.70
+0 Differences: 34 (19.77%)
+1 Differences: 128 (74.42%)
+2 Differences: 1 (0.58%)
+
+Average Steps: 2.31
+1 Steps: 73 (42.44%)
+2 Steps: 42 (24.42%)
+3 Steps: 19 (11.05%)
+4 Steps: 7 (4.07%)
+5 Steps: 31 (18.02%)
+
+
+Evaluation Results for 172 Episodes and 5 Steps:
+Average Detections: 2.63
+0 Detections: 1 (0.58%)
+1 Detections: 12 (6.98%)
+2 Detections: 37 (21.51%)
+3 Detections: 122 (70.93%)
+
+Average Differences: 0.71
+0 Differences: 36 (20.93%)
+1 Differences: 125 (72.67%)
+2 Differences: 3 (1.74%)
+
+Average Steps: 2.31
+1 Steps: 72 (41.86%)
+2 Steps: 44 (25.58%)
+3 Steps: 15 (8.72%)
+4 Steps: 12 (6.98%)
+5 Steps: 29 (16.86%)
+
+
+Evaluation Results for 172 Episodes and 5 Steps:
+Average Detections: 2.61
+0 Detections: 1 (0.58%)
+1 Detections: 14 (8.14%)
+2 Detections: 36 (20.93%)
+3 Detections: 121 (70.35%)
+
+Average Differences: 0.69
+0 Differences: 34 (19.77%)
+1 Differences: 126 (73.26%)
+2 Differences: 2 (1.16%)
+
+Average Steps: 2.29
+1 Steps: 77 (44.77%)
+2 Steps: 38 (22.09%)
+3 Steps: 18 (10.47%)
+4 Steps: 8 (4.65%)
+5 Steps: 31 (18.02%)

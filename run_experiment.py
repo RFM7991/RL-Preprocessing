@@ -121,8 +121,8 @@ def run_evaluation(actor_path="models/DDPG_actor.pth",
 if __name__ == "__main__":
 
     # Load the trained model and run evaluation
-    # run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=1, render=False, model_path="models/YOLO_eye_detector.pt", image_folder="images/test")
-    # print("Evaluation finished. Check output/DDPG/detections_plot.png for the results.")  
+    # run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=5, render=False, model_path="models/YOLO_eye_detector.pt", image_folder="images/test")
+    print("Evaluation finished.")  
 
     gamma = 0.99
     tau = 0.005
@@ -131,7 +131,7 @@ if __name__ == "__main__":
     batch_size = 32
     memory_capacity = 100000
     num_episodes = 5000
-    num_experiments = 20
+    num_experiments = 1
     action_noise_std = 0.1
     initial_noise_std = 0.1
     final_noise_std = 0.05
@@ -147,7 +147,7 @@ if __name__ == "__main__":
     # if torch.cuda.is_available():
     #     torch.cuda.manual_seed_all(21)
 
-    step_grid = [5, 10, 15 ]
+    step_grid = [25]
     results_dict = {}
 
     for num_steps in step_grid:
@@ -282,8 +282,12 @@ if __name__ == "__main__":
             env.plot_avg_successful_detections(avg_successful_detections, save=True, model_type="DDPG")
 
         # save the model
-        actor_path = f"models/DDPG_actor.pth"
-        critic_path = f"models/DDPG_critic.pth"
+        actor_path = f"models/{num_steps}/DDPG_actor.pth"
+        critic_path = f"models/{num_steps}DDPG_critic.pth"
+        os.makedirs(os.path.dirname(actor_path), exist_ok=True)
+        os.makedirs(os.path.dirname(critic_path), exist_ok=True)
+        
+        # Save the model state dictionaries
         torch.save(actor.state_dict(), actor_path)
         torch.save(critic.state_dict(), critic_path)
         print(f"Model saved at {actor_path} and {critic_path}")
