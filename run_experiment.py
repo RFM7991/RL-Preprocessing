@@ -105,7 +105,7 @@ def run_evaluation(actor_path="models/DDPG_actor.pth",
                    critic_path="models/DDPG_critic.pth",
                    num_steps=1,
                    render=False,
-                   model_path="models/YOLO_eye_detector_best.pt",
+                   model_path="models/YOLO_eye_detector.pt",
                    image_folder="images/test"):
 
     actor, critic = load_model(actor_path, critic_path)
@@ -124,7 +124,7 @@ def run_evaluation(actor_path="models/DDPG_actor.pth",
 if __name__ == "__main__":
 
     # Load the trained model and run evaluation
-    # run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=10, render=False, model_path="models/YOLO_eye_detector_best.pt", image_folder="images/test")
+    # run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=10, render=False, model_path="models/YOLO_eye_detector.pt", image_folder="images/test")
     # print("Evaluation finished. Check output/DDPG/detections_plot.png for the results.")
 
     gamma = 1.0
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     initial_noise_std = 0.1
     final_noise_std = 0.05
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model_path = "models/YOLO_eye_detector_best.pt"
+    model_path = "models/YOLO_eye_detector.pt"
     train_images_path = "images/train"
     test_images_path = "images/test"
 
