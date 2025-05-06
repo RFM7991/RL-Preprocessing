@@ -168,3 +168,20 @@ Average Differences: 0.66
 Average Steps: 2.46
 One Step: 71 (40.34%)
 Max Steps: 38 (21.59%)
+
+
+Evaluation Results for 176 Episodes and 5 Steps:
+Average Detections: 2.62
+0 Detections: 1 (0.57%)
+1 Detections: 12 (6.82%)
+2 Detections: 40 (22.73%)
+3 Detections: 123 (69.89%)
+
+Average Differences: 0.68
+0 Differences: 39 (22.16%)
+1 Differences: 124 (70.45%)
+2 Differences: 3 (1.70%)
+
+Average Steps: 2.31
+One Step: 76 (43.18%)
+Max Steps: 31 (17.61%)
