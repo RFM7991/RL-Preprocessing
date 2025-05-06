@@ -79,6 +79,9 @@ class ImagePreprocessingQEnv:
         # Linear or sigmoid delta scoring
         reward = delta_conf
 
+        if len(original_detections) == 3:
+            print(f"Path: {self.image_path}")
+
         # Optional: confidence-weighted bonus for new detections
         if len(adjusted_detections) > len(original_detections):
             reward += 1

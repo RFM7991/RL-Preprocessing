@@ -72,7 +72,6 @@ def evaluate_model(actor, critic, env, num_episodes, num_steps=1):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         actor.to(device)
         critic.to(device)
-
         for step in range(num_steps):
             action = select_action(actor, state, noise_std=0.05, device=device)
             beta = action[0] * 100
@@ -87,7 +86,7 @@ def evaluate_model(actor, critic, env, num_episodes, num_steps=1):
 
             if done:
                 break
-
+        
         # Log after episode ends (whether via done or max steps)
         total_detections.append(len(adjusted_detections))
         total_differences.append(len(adjusted_detections) - len(original_detections))
@@ -122,17 +121,17 @@ def run_evaluation(actor_path="models/DDPG_actor.pth",
 if __name__ == "__main__":
 
     # Load the trained model and run evaluation
-    run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=5, render=False, model_path="models/YOLO_eye_detector.pt", image_folder="images/test")
+    run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=1, render=False, model_path="models/YOLO_eye_detector.pt", image_folder="images/train")
     print("Evaluation finished. Check output/DDPG/detections_plot.png for the results.")  
 
-    gamma = 1.0
+    gamma = 0.99
     tau = 0.005
     actor_lr = 1e-3
     critic_lr = 1e-3
     batch_size = 32
     memory_capacity = 100000
     num_episodes = 5000
-    num_experiments = 1
+    num_experiments = 20
     action_noise_std = 0.1
     initial_noise_std = 0.1
     final_noise_std = 0.05
