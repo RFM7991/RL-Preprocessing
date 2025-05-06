@@ -127,11 +127,6 @@ class ImagePreprocessingQEnv:
         self.all_rewards.append(reward)
         self.all_differences.append(reward) 
 
-        if len(original_detections) == 3:
-            self.p_counter += 1
-            print(f"{self.image_path}")
-            print("..")
-
         done = reward > 0.1
         self.successful_detections.append(len(adjusted_detections))
 

@@ -133,8 +133,8 @@ if __name__ == "__main__":
     critic_lr = 1e-3
     batch_size = 32
     memory_capacity = 100000
-    num_episodes = 10
-    num_experiments = 5
+    num_episodes = 5000
+    num_experiments = 100
     action_noise_std = 0.1
     initial_noise_std = 0.1
     final_noise_std = 0.05
@@ -257,7 +257,7 @@ if __name__ == "__main__":
                 differences.append(per_episode_differences)
                 successful_detections.append(per_episode_detections)
 
-                if episode % 10 == 0:
+                if episode % 100 == 0:
                     past_100_avg_rewards = np.mean(rewards[-100:]) if len(rewards) >= 100 else np.mean(rewards)
                     past_100_avg_differences = np.mean(differences[-100:]) if len(differences) >= 100 else np.mean(differences)
                     past_100_avg_successful_detections = np.mean(successful_detections[-100:]) if len(successful_detections) >= 100 else np.mean(successful_detections)
@@ -284,6 +284,15 @@ if __name__ == "__main__":
             env.plot_avg_differences(avg_differences, save=True, model_type="DDPG")
             env.plot_avg_successful_detections(avg_successful_detections, save=True, model_type="DDPG")
 
+        # save the model
+        actor_path = f"models/DDPG_actor_critic_{num_steps}_steps_experiment_{i+1}.pth"
+        critic_path = f"models/DDPG_critic_{num_steps}_steps_experiment_{i+1}.pth"
+        torch.save(actor.state_dict(), actor_path)
+        torch.save(critic.state_dict(), critic_path)
+        print(f"Model saved at {actor_path} and {critic_path}")
+        print("Models saved.")
+        run_evaluation(actor_path=actor_path, critic_path=critic_path, num_steps=num_steps, model_path=model_path, image_folder=test_images_path)
+
         # results_dict 
         results_dict[num_steps]["rewards"].append(rewards)
         results_dict[num_steps]["differences"].append(differences)
@@ -296,13 +305,4 @@ if __name__ == "__main__":
         print("Results saved.")
 
     print("DDPG training complete.")
-
-    # save the model
-    torch.save(actor.state_dict(), "models/DDPG_actor.pth")
-    torch.save(critic.state_dict(), "models/DDPG_critic.pth")
-    print("Models saved.")
-
-    # run evaluation on test set
-    run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=10, model_path=model_path, image_folder=test_images_path)
-    print("Evaluation finished. Check output/DDPG/detections_plot.png for the results.")
 
