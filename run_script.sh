@@ -1,2 +1,2 @@
 rm output.log
-nohup python -u DDPG_processor.py > output.log 2>&1 &
+nohup python -u run_experiment.py > output.log 2>&1 &
