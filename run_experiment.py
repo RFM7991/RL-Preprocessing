@@ -82,14 +82,11 @@ def evaluate_model(actor, critic, env, num_episodes, num_steps=1):
             alpha = action[1] * 0.3 + 1.5  # scale back to [0.5, 1.5]
             action_input = np.array([action[0], action[1]])
             next_state, reward, done, original_detections, adjusted_detections = env.step(action_input)
-            if len(original_detections) >= 3:
-                # print path of original image
-                print(f"Bad_image")
-                break
-            elif len(adjusted_detections) > len(original_detections):
-                break
 
-            total_reward += reward
+            if done:
+                total_reward += reward
+                break
+            
 
             print(f"Episode {episode+1}, Step {step+1}, State: {next_state}, Action: [{beta:.2f}, {alpha:.2f}], Reward: {reward:.2f}, Total Reward: {total_reward:.2f}")
 
@@ -123,9 +120,9 @@ def run_evaluation(actor_path="models/DDPG_actor.pth",
 
 if __name__ == "__main__":
 
-    # Load the trained model and run evaluation
-    # run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=10, render=False, model_path="models/YOLO_eye_detector.pt", image_folder="images/test")
-    # print("Evaluation finished. Check output/DDPG/detections_plot.png for the results.")
+    # # Load the trained model and run evaluation
+    # run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=10, render=True, model_path="models/YOLO_eye_detector.pt", image_folder="images/test")
+    print("Evaluation finished. Check output/DDPG/detections_plot.png for the results.")
 
     gamma = 1.0
     tau = 0.005
@@ -133,8 +130,8 @@ if __name__ == "__main__":
     critic_lr = 1e-3
     batch_size = 32
     memory_capacity = 100000
-    num_episodes = 5000
-    num_experiments = 100
+    num_episodes = 1000
+    num_experiments = 20
     action_noise_std = 0.1
     initial_noise_std = 0.1
     final_noise_std = 0.05
@@ -150,7 +147,7 @@ if __name__ == "__main__":
     # if torch.cuda.is_available():
     #     torch.cuda.manual_seed_all(21)
 
-    step_grid = [1, 10, 20]
+    step_grid = [1, 5, 10]
     results_dict = {}
 
     for num_steps in step_grid:
@@ -285,8 +282,8 @@ if __name__ == "__main__":
             env.plot_avg_successful_detections(avg_successful_detections, save=True, model_type="DDPG")
 
         # save the model
-        actor_path = f"models/DDPG_actor_critic_{num_steps}_steps_experiment_{i+1}.pth"
-        critic_path = f"models/DDPG_critic_{num_steps}_steps_experiment_{i+1}.pth"
+        actor_path = f"models/DDPG_actor.pth"
+        critic_path = f"models/DDPG_critic.pth"
         torch.save(actor.state_dict(), actor_path)
         torch.save(critic.state_dict(), critic_path)
         print(f"Model saved at {actor_path} and {critic_path}")

@@ -91,7 +91,7 @@ class ObjectDetectorCNN:
         return detections
 
     def draw_detections(self, img, detections):
-
+        img = img.copy()
         for det in detections:
             x_center = int(det["x_center"])
             y_center = int(det["y_center"])

@@ -77,8 +77,6 @@ class ImagePreprocessingQEnv:
         # Calculate the difference in confidence
         delta_conf = adjusted_conf - original_conf
 
-        
-
         # Linear or sigmoid delta scoring
         reward = delta_conf
 
@@ -115,7 +113,7 @@ class ImagePreprocessingQEnv:
         self.current_beta = action[0] * 100
         self.current_alpha = action[1] * 0.3 + 1.5
 
-        self.image = self.apply_adjustments(self.original_image, self.current_beta, self.current_alpha)
+        self.image = self.apply_adjustments(self.image, self.current_beta, self.current_alpha)
 
         original_detections = self.detector.detect_objects(self.detector.preprocess_image_array(self.original_image))
         adjusted_detections = self.detector.detect_objects(self.detector.preprocess_image_array(self.image))
