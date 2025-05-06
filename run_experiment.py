@@ -121,8 +121,8 @@ def run_evaluation(actor_path="models/DDPG_actor.pth",
 if __name__ == "__main__":
 
     # Load the trained model and run evaluation
-    run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=1, render=False, model_path="models/YOLO_eye_detector.pt", image_folder="images/train")
-    print("Evaluation finished. Check output/DDPG/detections_plot.png for the results.")  
+    # run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=1, render=False, model_path="models/YOLO_eye_detector.pt", image_folder="images/test")
+    # print("Evaluation finished. Check output/DDPG/detections_plot.png for the results.")  
 
     gamma = 0.99
     tau = 0.005
