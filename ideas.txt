@@ -1,0 +1,17 @@
+# TODO:
+# look at reward function
+#  evluate the model on a test set of images
+# do 20/80 # train/test split
+# look for similat results 
+# play with steps 
+# if needed: add all the YOLO training data, just hold out test set for CNN performance evaluation
+# ablate brightness and contrast, see if one is more important than the other
+# then explore gamma correction, histogram equalization, CLAHE, etc. 
+# try CNN based input for RL 
+
+# save the best model 
+# try again for confidence increasing reward for larger data set 
+# metric idea - %mulitple detections out of total images / steps 
+# should identify any images that never get detected, and then we can look at those images to see if they are problematic
+# need to scrub bad images from the dataset, or add more data augmentation to make them more robust
+# TODO: add IoU check for pupil in eye.Becomes more relevant with evaluation, but should be incorporated into reward function

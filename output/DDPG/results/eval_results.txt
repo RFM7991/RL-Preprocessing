@@ -1,0 +1,51 @@
+
+
+Evaluation Results for 176 Episodes and 10 Steps:
+Average Detections: 2.52
+0 Detections: 6 (3.41%)
+1 Detections: 9 (5.11%)
+2 Detections: 49 (27.84%)
+3 Detections: 112 (63.64%)
+
+Average Differences: 0.57
+0 Differences: 53 (30.11%)
+1 Differences: 108 (61.36%)
+2 Differences: 4 (2.27%)
+
+Average Steps: 4.57
+One Step: 84 (47.73%)
+Max Steps: 60 (34.09%)
+
+
+Evaluation Results for 176 Episodes and 10 Steps:
+Average Detections: 2.33
+0 Detections: 3 (1.70%)
+1 Detections: 7 (3.98%)
+2 Detections: 95 (53.98%)
+3 Detections: 71 (40.34%)
+
+Average Differences: 0.39
+0 Differences: 96 (54.55%)
+1 Differences: 70 (39.77%)
+2 Differences: 3 (1.70%)
+
+Average Steps: 6.87
+One Step: 32 (18.18%)
+Max Steps: 100 (56.82%)
+
+
+Evaluation Results for 176 Episodes and 10 Steps:
+Average Detections: 2.07
+0 Detections: 5 (2.84%)
+1 Detections: 17 (9.66%)
+2 Detections: 114 (64.77%)
+3 Detections: 40 (22.73%)
+
+Average Differences: 0.13
+0 Differences: 113 (64.20%)
+1 Differences: 43 (24.43%)
+2 Differences: 1 (0.57%)
+
+Average Steps: 7.74
+One Step: 38 (21.59%)
+Max Steps: 130 (73.86%)

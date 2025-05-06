@@ -44,6 +44,9 @@ class ObjectDetectorCNN:
         return img_tensor
 
     def detect_objects(self, image_tensor):
+        height, width = image_tensor.shape[2], image_tensor.shape[3]
+        if height % 32 != 0 or width % 32 != 0:
+            raise ValueError("Image dimensions must be divisible by 32 for YOLOv8 model.")
         results = self.model(image_tensor, verbose=False)  # Run inference on the image tensor
 
         if len(results) == 0:
