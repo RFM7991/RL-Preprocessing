@@ -147,7 +147,7 @@ if __name__ == "__main__":
     # if torch.cuda.is_available():
     #     torch.cuda.manual_seed_all(21)
 
-    step_grid = [25]
+    step_grid = [100]
     results_dict = {}
 
     for num_steps in step_grid:

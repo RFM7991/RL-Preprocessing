@@ -1,0 +1,25 @@
+
+
+Evaluation Results for 172 Episodes and 10 Steps:
+Average Detections: 2.66
+0 Detections: 3 (1.74%)
+1 Detections: 14 (8.14%)
+2 Detections: 22 (12.79%)
+3 Detections: 133 (77.33%)
+
+Average Differences: 0.74
+0 Differences: 24 (13.95%)
+1 Differences: 134 (77.91%)
+2 Differences: 3 (1.74%)
+
+Average Steps: 2.73
+1 Steps: 105 (61.05%)
+2 Steps: 21 (12.21%)
+3 Steps: 9 (5.23%)
+4 Steps: 4 (2.33%)
+5 Steps: 3 (1.74%)
+6 Steps: 4 (2.33%)
+7 Steps: 1 (0.58%)
+8 Steps: 7 (4.07%)
+9 Steps: 3 (1.74%)
+10 Steps: 15 (8.72%)
