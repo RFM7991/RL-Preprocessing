@@ -130,8 +130,8 @@ if __name__ == "__main__":
     critic_lr = 1e-3
     batch_size = 32
     memory_capacity = 100000
-    num_episodes = 5000
-    num_experiments = 20
+    num_episodes = 10000
+    num_experiments = 1
     action_noise_std = 0.1
     initial_noise_std = 0.1
     final_noise_std = 0.05
@@ -147,7 +147,7 @@ if __name__ == "__main__":
     # if torch.cuda.is_available():
     #     torch.cuda.manual_seed_all(21)
 
-    step_grid = [5, 10, 25]
+    step_grid = [5]
     results_dict = {}
 
     for num_steps in step_grid:
@@ -167,7 +167,7 @@ if __name__ == "__main__":
             # split_dataset() get a new split saved as train_shuffle and test_shuffle
 
             detector = ObjectDetectorCNN(model_path)
-            env = ImagePreprocessingQEnv(detector, train_images_folder, render=True)
+            env = ImagePreprocessingQEnv(detector, train_images_folder, render=False)
 
             actor = Actor(input_dim=2, output_dim=2).to(device)
             target_actor = Actor(input_dim=2, output_dim=2).to(device)

@@ -79,9 +79,6 @@ class ImagePreprocessingQEnv:
         # Linear or sigmoid delta scoring
         reward = delta_conf
 
-        if len(original_detections) == 3:
-            print(f"Path: {self.image_path}")
-
         # Optional: confidence-weighted bonus for new detections
         if len(adjusted_detections) > len(original_detections):
             reward += 1
@@ -148,7 +145,7 @@ class ImagePreprocessingQEnv:
 
     def get_state_vector(self):
         brightness, contrast = self.compute_image_stats(self.image)
-        return np.array([brightness, contrast]) 
+        return np.array([brightness, contrast])
 
     def plot_rewards(self, save=True, rewards=[], model_type="Q"):
         plt.figure(figsize=(20, 10))
