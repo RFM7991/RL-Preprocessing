@@ -42,17 +42,17 @@ def plot_and_save_results(detections, differences, steps, num_images, num_steps,
 
         write_and_print(f"\n\nEvaluation Results for {num_images} Episodes and {num_steps} Steps:")
 
-        write_and_print(f"Average Detections: {np.mean(detections):.2f}")
+        write_and_print(f"Average Detections: {np.mean(detections):.2f} ({np.std(detections):.2f})")
         for val in range(4):
             count = sum(1 for d in detections if d == val)
             write_and_print(f"{val} Detections: {count} ({count / len(detections) * 100:.2f}%)")
 
-        write_and_print(f"\nAverage Differences: {np.mean(differences):.2f}")
+        write_and_print(f"\nAverage Differences: {np.mean(differences):.2f} ({np.std(differences):.2f})")
         for val in range(3):
             count = sum(1 for d in differences if d == val)
             write_and_print(f"{val} Differences: {count} ({count / len(differences) * 100:.2f}%)")
 
-        write_and_print(f"\nAverage Steps: {np.mean(steps):.2f}")
+        write_and_print(f"\nAverage Steps: {np.mean(steps):.2f} ({np.std(steps):.2f})")
         for val in range(1, num_steps + 1):
             count = sum(1 for s in steps if s == val)
             write_and_print(f"{val} Steps: {count} ({count / len(steps) * 100:.2f}%)")

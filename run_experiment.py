@@ -121,7 +121,7 @@ def run_evaluation(actor_path="models/DDPG_actor.pth",
 if __name__ == "__main__":
 
     # Load the trained model and run evaluation
-    # run_evaluation(actor_path="models/DDPG_actor.pth", critic_path="models/DDPG_critic.pth", num_steps=5, render=False, model_path="models/YOLO_eye_detector.pt", image_folder="images/test")
+    # run_evaluation(actor_path="models/5/DDPG_actor.pth", critic_path="models/5/DDPG_critic.pth", num_steps=5, render=True, model_path="models/YOLO_eye_detector.pt", image_folder="images/test")
     print("Evaluation finished.")  
 
     gamma = 0.99
@@ -131,7 +131,7 @@ if __name__ == "__main__":
     batch_size = 32
     memory_capacity = 100000
     num_episodes = 5000
-    num_experiments = 1
+    num_experiments = 20
     action_noise_std = 0.1
     initial_noise_std = 0.1
     final_noise_std = 0.05
@@ -147,7 +147,7 @@ if __name__ == "__main__":
     # if torch.cuda.is_available():
     #     torch.cuda.manual_seed_all(21)
 
-    step_grid = [100]
+    step_grid = [5, 10, 25]
     results_dict = {}
 
     for num_steps in step_grid:
@@ -167,7 +167,7 @@ if __name__ == "__main__":
             # split_dataset() get a new split saved as train_shuffle and test_shuffle
 
             detector = ObjectDetectorCNN(model_path)
-            env = ImagePreprocessingQEnv(detector, train_images_folder, render=False)
+            env = ImagePreprocessingQEnv(detector, train_images_folder, render=True)
 
             actor = Actor(input_dim=2, output_dim=2).to(device)
             target_actor = Actor(input_dim=2, output_dim=2).to(device)
@@ -283,7 +283,7 @@ if __name__ == "__main__":
 
         # save the model
         actor_path = f"models/{num_steps}/DDPG_actor.pth"
-        critic_path = f"models/{num_steps}DDPG_critic.pth"
+        critic_path = f"models/{num_steps}/DDPG_critic.pth"
         os.makedirs(os.path.dirname(actor_path), exist_ok=True)
         os.makedirs(os.path.dirname(critic_path), exist_ok=True)
         
